@@ -15,7 +15,7 @@ namespace Butik_PGCJ
         {
             TableLayoutPanel outline = new TableLayoutPanel
             {
-                RowCount = 3,
+                RowCount = 4,
                 ColumnCount = 3
             };
             Controls.Add(outline);
