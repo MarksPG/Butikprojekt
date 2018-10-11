@@ -13,7 +13,12 @@ namespace Butik_PGCJ
     {
         public MyForm()
         {
-
+            TableLayoutPanel outline = new TableLayoutPanel
+            {
+                RowCount = 3,
+                ColumnCount = 3
+            };
+            Controls.Add(outline);
         }
     }
 }
