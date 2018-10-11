@@ -11,5 +11,9 @@ namespace Butik_PGCJ
 {
     class MyForm : Form
     {
+        public MyForm()
+        {
+
+        }
     }
 }
