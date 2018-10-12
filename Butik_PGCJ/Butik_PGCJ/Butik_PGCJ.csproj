@@ -58,5 +58,10 @@
     <None Include="App.config" />
     <None Include="VendingSupply.csv" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Pictures\guitar-test-sample.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
