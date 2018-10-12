@@ -83,7 +83,7 @@ namespace Butik_PGCJ
                 "Fender",
                 "Taylor",
                 "Gibson",
-                "Ibanze",
+                "Ibanez",
             });
 
             //Addering av rader och kolumner, samt storlektsmall.
