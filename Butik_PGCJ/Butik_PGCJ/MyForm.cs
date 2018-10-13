@@ -10,6 +10,14 @@ using System.Threading.Tasks;
 
 namespace Butik_PGCJ
 {
+    class Guitar
+    {
+        public string ItemName;
+        public int ItemPrice;
+        public string ItemPic;
+        public string ItemDescr;
+    }
+
     class MyForm : Form
     {
         Button buttonCheckout = new Button();
@@ -92,16 +100,16 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemList);
             outline.SetRowSpan(itemList, 5);
-            
+
             //Adderar några testobjekt. Endast för att se något i itemList.
-            itemList.Items.AddRange(new object[]
-            {
-                "Martin",
-                "Fender",
-                "Taylor",
-                "Gibson",
-                "Ibanez",
-            });
+            //itemList.Items.AddRange(new object[]
+            //{
+            //    "Martin",
+            //    "Fender",
+            //    "Taylor",
+            //    "Gibson",
+            //    "Ibanez",
+            //});
 
             //---------------Markerar slutet för kolumn 1---------------
 
@@ -194,7 +202,7 @@ namespace Butik_PGCJ
                 Text = "Pris",
                 Width = 80
             };
-            
+
             //Lägger till kolumnHeaders. Vet ej om detta är optimalt tillvägagångssätt, men bara test nu.
             itemCart.Columns.AddRange(new ColumnHeader[]
             {
@@ -213,10 +221,32 @@ namespace Butik_PGCJ
             outline.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
-            for (int i = 0; i < 6; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }           
+            for (int i = 0; i < 6; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }
             for (int i = 0; i < 4; i++) { outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
             outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+
+
+            //Inläsning från csv-fil "VendingSupply.csv"
+            string[] lines = File.ReadAllLines("VendingSupply.csv");
+            List<Guitar> shopitems = new List<Guitar> { };
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Guitar g = new Guitar
+                {
+                    ItemName = values[0],
+                    ItemPrice = int.Parse(values[1]),
+                    ItemPic = values[2],
+                    ItemDescr = values[3]
+                };
+                itemList.Items.Add(g.ItemName);
+                shopitems.Add(g);
+
+            }
         }
+
+
     }
-}
+}   
+
