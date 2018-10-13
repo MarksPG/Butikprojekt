@@ -42,6 +42,8 @@ namespace Butik_PGCJ
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
 
+        List<Guitar> shopItems;
+
 
         public MyForm()
         {
@@ -100,6 +102,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemList);
             outline.SetRowSpan(itemList, 5);
+            itemList.SelectedIndexChanged += itemListBoxClicked;
 
             //Adderar några testobjekt. Endast för att se något i itemList.
             //itemList.Items.AddRange(new object[]
@@ -134,8 +137,8 @@ namespace Butik_PGCJ
                 Dock = DockStyle.Fill,
                 Multiline = true,
                 ReadOnly = true,
-                Text = "Taylor 414CE\r\nEn gitarr med tidslös design\r\n" +
-                       "där pris och kvalité går hand i hand",
+   //           Text = "Taylor 414CE\r\nEn gitarr med tidslös design\r\n" +
+   //                    "där pris och kvalité går hand i hand",
             };
             outline.Controls.Add(itemDescriptionTextbox, 2, 1);
 
@@ -229,7 +232,7 @@ namespace Butik_PGCJ
 
             //Inläsning från csv-fil "VendingSupply.csv"
             string[] lines = File.ReadAllLines("VendingSupply.csv");
-            List<Guitar> shopitems = new List<Guitar> { };
+            shopItems = new List<Guitar> { };
             foreach (string line in lines)
             {
                 string[] values = line.Split(',');
@@ -240,12 +243,16 @@ namespace Butik_PGCJ
                     ItemPic = values[2],
                     ItemDescr = values[3]
                 };
-                itemList.Items.Add(g.ItemName);
-                shopitems.Add(g);
+                itemList.Items.Add(g.ItemName); 
+                shopItems.Add(g);
 
             }
         }
-
+        private void itemListBoxClicked(object sender, EventArgs e)
+        {
+            Guitar g = shopItems[itemList.SelectedIndex];
+            itemDescriptionTextbox.Text = g.ItemDescr;
+        }
 
     }
 }   
