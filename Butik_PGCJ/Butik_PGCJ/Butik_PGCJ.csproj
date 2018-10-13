@@ -56,7 +56,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="VendingSupply.csv" />
+    <None Include="VendingSupply.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Pictures\guitar-test-sample.jpg">
