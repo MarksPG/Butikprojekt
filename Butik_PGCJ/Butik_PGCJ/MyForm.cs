@@ -35,6 +35,8 @@ namespace Butik_PGCJ
 
         ListView itemCart = new ListView();
 
+        ListViewItem item;
+
         PictureBox itemPicture = new PictureBox();
 
         TableLayoutPanel outline = new TableLayoutPanel();
@@ -47,7 +49,7 @@ namespace Butik_PGCJ
         public MyForm()
         {
             //Talar om storleken på winform vid uppstart
-            ClientSize = new Size(800, 550);
+            ClientSize = new Size(850, 550);
 
             //Skapar rutnät
             outline = new TableLayoutPanel
@@ -173,12 +175,17 @@ namespace Butik_PGCJ
             outline.SetRowSpan(itemCart, 5);
             outline.Controls.Add(itemCart, 3, 1);
 
+            itemCart.Columns.Add("Vara");
+            itemCart.Columns.Add("Pris");
+            itemCart.Columns.Add("Antal");
+
+
             //Kolumn där varans namn bör synas
-            cartColumnItem = new ColumnHeader()
+            /*cartColumnItem = new ColumnHeader()
             {
                 Text = "Vara",
                 Width = 150
-            };
+            };*/
 
             //Kolumn där varans pris bör synas
             /*cartColumnPrice = new ColumnHeader()
@@ -188,7 +195,8 @@ namespace Butik_PGCJ
             };*/
 
             //Lägger till kolumnHeader för "Vara".
-            itemCart.Columns.Add(cartColumnItem);
+            //itemCart.Columns.Add(cartColumnItem);
+            //itemCart.Columns.Add(cartColumnPrice);
 
             //Knapp som "checka ut"/"köper".
             buttonCheckout = new Button()
@@ -203,7 +211,7 @@ namespace Butik_PGCJ
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
             for (int i = 0; i < 6; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }
-            
+
             //Addering av kolumner.
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
@@ -239,7 +247,9 @@ namespace Butik_PGCJ
         private void ItemCartAddClicked(object sender, EventArgs e)
         {
             Guitar g = shopItems[itemList.SelectedIndex];
-            itemCart.Items.Add(g.ItemName);
+            item = new ListViewItem(g.ItemName);
+            item.SubItems.Add(g.ItemPrice.ToString());
+            itemCart.Items.Add(item);
         }
     }
 }
