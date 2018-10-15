@@ -183,24 +183,6 @@ namespace Butik_PGCJ
             itemCart.Columns.Add("Antal");
 
 
-            //Kolumn där varans namn bör synas
-            /*cartColumnItem = new ColumnHeader()
-            {
-                Text = "Vara",
-                Width = 150
-            };*/
-
-            //Kolumn där varans pris bör synas
-            /*cartColumnPrice = new ColumnHeader()
-            {
-                Text = "Pris",
-                Width = 80
-            };*/
-
-            //Lägger till kolumnHeader för "Vara".
-            //itemCart.Columns.Add(cartColumnItem);
-            //itemCart.Columns.Add(cartColumnPrice);
-
             //Knapp som "checka ut"/"köper".
             buttonCheckout = new Button()
             {
@@ -253,14 +235,15 @@ namespace Butik_PGCJ
             if (shoppingCart.ContainsKey(g) == false)
             {
                 shoppingCart.Add(g, 1);
-                item = new ListViewItem(g.ItemName);
-                itemCart.Items.Add(item);
+                //item = new ListViewItem(g.ItemName);
+                //itemCart.Items.Add(item);
             }
             else
             {
                 shoppingCart[g]++;
-                item.SubItems.Add(shoppingCart[g].ToString());
+                //item.SubItems.Add(shoppingCart[g].ToString());
             }
+            UpdateListView(shoppingCart);
         }
 
         private void ItemCartRemClicked(object sender, EventArgs e)
@@ -273,6 +256,21 @@ namespace Butik_PGCJ
             //ListViewItem item = (MyObject)MyListView.SelectedItems[0];
             //MyObject foo = (MyObject)item.Tag;
         }
+
+        private void UpdateListView(Dictionary<Guitar, int> shoppingCart)
+        {
+            itemCart.Items.Clear();
+            
+            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            {
+                item = new ListViewItem(pair.Key.ItemName);
+                item.SubItems.Add(pair.Value.ToString());
+                item.SubItems.Add(pair.Key.ItemPrice.ToString());
+                itemCart.Items.Add(item);
+            }
+        }
+
+
     }
 }
 
