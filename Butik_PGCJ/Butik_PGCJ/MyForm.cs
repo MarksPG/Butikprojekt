@@ -44,8 +44,8 @@ namespace Butik_PGCJ
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
 
-        List<Guitar> shopItems;
-        Dictionary<Guitar, int> shoppingCart;
+        List<Guitar> shopItems = new List<Guitar>();
+        Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
 
         public MyForm()
         {
@@ -159,7 +159,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(removeItemFromCart, 1, 4);
             outline.SetColumnSpan(removeItemFromCart, 2);
-            //removeItemFromCart.Click += ItemCartRemClicked;
+            removeItemFromCart.Click += ItemCartRemClicked;
 
             //---------------Markerar slutet för kolumn 2 och 3---------------
 
@@ -172,7 +172,8 @@ namespace Butik_PGCJ
             {
                 Anchor = AnchorStyles.Top,
                 Dock = DockStyle.Fill,
-                View = View.Details
+                View = View.Details,
+                MultiSelect = false
             };
             outline.SetRowSpan(itemCart, 5);
             outline.Controls.Add(itemCart, 3, 1);
@@ -249,18 +250,29 @@ namespace Butik_PGCJ
         private void ItemCartAddClicked(object sender, EventArgs e)
         {
             Guitar g = shopItems[itemList.SelectedIndex];
-            item = new ListViewItem(g.ItemName);
-            item.SubItems.Add(g.ItemPrice.ToString());
-            itemCart.Items.Add(item);
+            if (shoppingCart.ContainsKey(g) == false)
+            {
+                shoppingCart.Add(g, 1);
+                item = new ListViewItem(g.ItemName);
+                itemCart.Items.Add(item);
+            }
+            else
+            {
+                shoppingCart[g]++;
+                item.SubItems.Add(shoppingCart[g].ToString());
+            }
         }
 
-        //private void ItemCartRemClicked(object sender, EventArgs e)
-        //{
-        //    Guitar g = shopItems[itemList.SelectedIndex];
-        //    item = new ListViewItem(g.ItemName);
-        //    item.SubItems.Add(g.ItemPrice.ToString());
-        //    itemCart.Items.Add(item);
-        //}
+        private void ItemCartRemClicked(object sender, EventArgs e)
+        {
+
+            //Guitar g = itemCart.SelectedItems[0];
+            itemCart.Items.Remove(itemCart.SelectedItems[0]);
+
+
+            //ListViewItem item = (MyObject)MyListView.SelectedItems[0];
+            //MyObject foo = (MyObject)item.Tag;
+        }
     }
 }
 
