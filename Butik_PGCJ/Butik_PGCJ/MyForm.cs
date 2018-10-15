@@ -179,8 +179,8 @@ namespace Butik_PGCJ
             outline.Controls.Add(itemCart, 3, 1);
 
             itemCart.Columns.Add("Vara");
-            itemCart.Columns.Add("Pris");
             itemCart.Columns.Add("Antal");
+            itemCart.Columns.Add("Pris");
 
 
             //Knapp som "checka ut"/"köper".
@@ -248,29 +248,36 @@ namespace Butik_PGCJ
 
         private void ItemCartRemClicked(object sender, EventArgs e)
         {
-
-            //Guitar g = itemCart.SelectedItems[0];
-            itemCart.Items.Remove(itemCart.SelectedItems[0]);
-
-
-            //ListViewItem item = (MyObject)MyListView.SelectedItems[0];
-            //MyObject foo = (MyObject)item.Tag;
+            string itemCheckTag = itemCart.SelectedItems[0].Tag.ToString();
+            var itemToRemove = shoppingCart.Where(i => i.Key.ItemName == itemCheckTag).ToArray();
+            foreach (var item in itemToRemove)
+            {
+                if (item.Value > 1)
+                {
+                    shoppingCart[item.Key] = item.Value-1;
+                    UpdateListView(shoppingCart);
+                }
+                else
+                {
+                    shoppingCart.Remove(item.Key);
+                    itemCart.Items.Remove(itemCart.SelectedItems[0]);
+                }
+            }
         }
 
         private void UpdateListView(Dictionary<Guitar, int> shoppingCart)
         {
             itemCart.Items.Clear();
-            
+
             foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
             {
                 item = new ListViewItem(pair.Key.ItemName);
                 item.SubItems.Add(pair.Value.ToString());
                 item.SubItems.Add(pair.Key.ItemPrice.ToString());
+                item.Tag = pair.Key.ItemName;
                 itemCart.Items.Add(item);
             }
         }
-
-
     }
 }
 
