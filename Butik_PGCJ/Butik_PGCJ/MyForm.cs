@@ -158,6 +158,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(removeItemFromCart, 1, 4);
             outline.SetColumnSpan(removeItemFromCart, 2);
+            //removeItemFromCart.Click += ItemCartRemClicked;
 
             //---------------Markerar slutet för kolumn 2 och 3---------------
 
@@ -251,6 +252,14 @@ namespace Butik_PGCJ
             item.SubItems.Add(g.ItemPrice.ToString());
             itemCart.Items.Add(item);
         }
+
+        //private void ItemCartRemClicked(object sender, EventArgs e)
+        //{
+        //    Guitar g = shopItems[itemList.SelectedIndex];
+        //    item = new ListViewItem(g.ItemName);
+        //    item.SubItems.Add(g.ItemPrice.ToString());
+        //    itemCart.Items.Add(item);
+        //}
     }
 }
 
