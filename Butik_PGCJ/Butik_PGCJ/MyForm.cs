@@ -45,6 +45,7 @@ namespace Butik_PGCJ
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
 
         List<Guitar> shopItems;
+        Dictionary<Guitar, int> shoppingCart;
 
         public MyForm()
         {
