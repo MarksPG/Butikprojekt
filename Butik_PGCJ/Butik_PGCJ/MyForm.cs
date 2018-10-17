@@ -29,16 +29,22 @@ namespace Butik_PGCJ
 
     class MyForm : Form
     {
-        Button buttonCheckout = new Button();
+        Button doCheckout = new Button();
         Button addItemToCart = new Button();
         Button removeItemFromCart = new Button();
+        Button addDiscount = new Button();
 
         ColumnHeader cartColumnItem = new ColumnHeader();
         ColumnHeader cartColumnPrice = new ColumnHeader();
 
+        Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
+
         Label itemListLabel = new Label();
         Label itemDescriptionLabel = new Label();
         Label itemCartLabel = new Label();
+        Label sumLabel = new Label();
+
+        List<Guitar> shopItems = new List<Guitar>();
 
         ListBox itemList;
 
@@ -49,12 +55,12 @@ namespace Butik_PGCJ
         PictureBox itemPicture = new PictureBox();
 
         TableLayoutPanel outline = new TableLayoutPanel();
+        TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
-
-        List<Guitar> shopItems = new List<Guitar>();
-        Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
+        TextBox discountTextbox = new TextBox();
+        TextBox sumTextbox = new TextBox();
 
         public MyForm()
         {
@@ -80,28 +86,7 @@ namespace Butik_PGCJ
                 Text = "Utbud",
                 Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
             };
-            outline.Controls.Add(itemListLabel);
-
-            //Label för beskrivning av vara
-            itemDescriptionLabel = new Label()
-            {
-                Anchor = AnchorStyles.None,
-                AutoSize = true,
-                Text = "Beskrivning av vara",
-                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold)
-            };
-            outline.Controls.Add(itemDescriptionLabel);
-            outline.SetColumnSpan(itemDescriptionLabel, 2);
-
-            //Label för varukorg
-            itemCartLabel = new Label()
-            {
-                Anchor = AnchorStyles.None,
-                AutoSize = true,
-                Text = "Varukorg",
-                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
-            };
-            outline.Controls.Add(itemCartLabel);
+            outline.Controls.Add(itemListLabel, 0, 0);
 
             //Lista över tillgänliga varor i shoppen
             itemList = new ListBox()
@@ -117,6 +102,17 @@ namespace Butik_PGCJ
 
 
             //---------------Markerar början för kolumn 2 och 3---------------
+
+            //Label för beskrivning av vara
+            itemDescriptionLabel = new Label()
+            {
+                Anchor = AnchorStyles.None,
+                AutoSize = true,
+                Text = "Beskrivning av vara",
+                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold)
+            };
+            outline.Controls.Add(itemDescriptionLabel, 1, 0);
+            outline.SetColumnSpan(itemDescriptionLabel, 2);
 
             //Picturebox
             itemPicture = new PictureBox()
@@ -170,13 +166,40 @@ namespace Butik_PGCJ
             outline.SetColumnSpan(removeItemFromCart, 2);
             removeItemFromCart.Click += ItemCartRemClicked;
 
+            //Textbox där användaren kan skriva in en rabattkod
+            discountTextbox = new TextBox()
+            {
+                Text = "Skriv in rabattkod här...",
+                Dock = DockStyle.Bottom,
+            };
+            outline.Controls.Add(discountTextbox, 1, 5);
+
+            //Knapp där användaren trycker för att applicera rabattkoden
+            addDiscount = new Button()
+            {
+                Text = "Applicera rabatt",
+                Anchor = (AnchorStyles.Bottom | AnchorStyles.Left),
+                AutoSize = true
+            };
+            outline.Controls.Add(addDiscount, 2, 5);
+
+
             //---------------Markerar slutet för kolumn 2 och 3---------------
 
 
             //---------------Markerar början för kolumn 4---------------
 
-            //ListView där adderade varor visas. Här är tanken att
-            //man ska kunna radera varor också. Två kolumner, varan och priset.
+            //Label för varukorg
+            itemCartLabel = new Label()
+            {
+                Anchor = AnchorStyles.None,
+                AutoSize = true,
+                Text = "Varukorg",
+                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold),
+            };
+            outline.Controls.Add(itemCartLabel, 3, 0);
+
+            //ListView där adderade varor visas.
             itemCart = new ListView()
             {
                 Anchor = AnchorStyles.Top,
@@ -191,22 +214,57 @@ namespace Butik_PGCJ
             itemCart.Columns.Add("Antal");
             itemCart.Columns.Add("Pris");
 
+            //Lägger till en ny Panel l
+            outlineBelowItemCart = new TableLayoutPanel()
+            {
+                RowCount = 1,
+                ColumnCount = 3,
+                Dock = DockStyle.Fill
+            };
+            outline.Controls.Add(outlineBelowItemCart, 3, 6);
+
+            //Addering av sumLabel
+            sumLabel = new Label()
+            {
+                Anchor = AnchorStyles.Left,
+                AutoSize = true,
+                Text = "Summa:",
+                Font = new Font("Microsoft Sans Serif", 11, FontStyle.Bold),
+            };
+            outlineBelowItemCart.Controls.Add(sumLabel, 0, 0);
+
+            //Addering av sumTextbox
+            sumTextbox = new TextBox()
+            {
+                Anchor = AnchorStyles.Left,
+            };
+            outlineBelowItemCart.Controls.Add(sumTextbox, 1, 0);
 
             //Knapp som "checka ut"/"köper".
-            buttonCheckout = new Button()
+            doCheckout = new Button()
             {
-                Anchor = AnchorStyles.Top,
-                Text = "Checkout"
+                Text = "Checkout",
+                Anchor = AnchorStyles.None,
+                AutoSize = true
             };
-            outline.Controls.Add(buttonCheckout, 3, 6);
+            outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
 
-            //Addering av rader.
+            //Addering av kolumner för outlineBelowItemCart
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+
+            outlineBelowItemCart.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+
+            //---------------Markerar slutet för kolumn 4---------------
+
+            //Addering av rader för outline.
             outline.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
             outline.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
             for (int i = 0; i < 6; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }
 
-            //Addering av kolumner.
+            //Addering av kolumner för outline.
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
@@ -214,7 +272,8 @@ namespace Butik_PGCJ
 
             outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
-            //Inläsning från csv-fil "VendingSupply.csv"
+            //Inläsning från csv-fil "VendingSupply.csv" och addering till Lista fylld
+            //med objekt av typen klassen Guitar
             string[] lines = File.ReadAllLines("VendingSupply.csv");
             shopItems = new List<Guitar> { };
             foreach (string line in lines)
@@ -298,4 +357,3 @@ namespace Butik_PGCJ
         }
     }
 }
-
