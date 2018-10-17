@@ -18,6 +18,15 @@ namespace Butik_PGCJ
         public string ItemDescr;
     }
 
+    //class Discount
+    //{
+    //    public string DiscountCodes;
+
+        
+
+    //}
+
+
     class MyForm : Form
     {
         Button buttonCheckout = new Button();
@@ -221,6 +230,15 @@ namespace Butik_PGCJ
                 itemList.Items.Add(g.ItemName + " Pris :" + g.ItemPrice);
                 shopItems.Add(g);
             }
+
+
+            //Inläsning från csv-fil "Discounts.csv"
+            string discountCodes = File.ReadAllText("Discounts.csv");
+
+
+            //Sparar varukorgen till ShoppingCart.csv
+
+
         }
         private void ItemListBoxClicked(object sender, EventArgs e)
         {

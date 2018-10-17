@@ -48,14 +48,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
+    <Compile Include="MyForm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Discounts.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="VendingSupply.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
