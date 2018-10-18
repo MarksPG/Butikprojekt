@@ -22,7 +22,7 @@ namespace Butik_PGCJ
     //{
     //    public string DiscountCodes;
 
-        
+
 
     //}
 
@@ -43,6 +43,8 @@ namespace Butik_PGCJ
         Label itemDescriptionLabel = new Label();
         Label itemCartLabel = new Label();
         Label sumLabel = new Label();
+        Label priceLabel = new Label();
+        Label discountLabel = new Label();
 
         List<Guitar> shopItems = new List<Guitar>();
 
@@ -56,11 +58,13 @@ namespace Butik_PGCJ
 
         TableLayoutPanel outline = new TableLayoutPanel();
         TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
+        TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
         TextBox discountTextbox = new TextBox();
         TextBox sumTextbox = new TextBox();
+        TextBox priceTextbox = new TextBox();
 
         public MyForm()
         {
@@ -119,7 +123,7 @@ namespace Butik_PGCJ
             {
                 BorderStyle = BorderStyle.FixedSingle,
                 Anchor = AnchorStyles.None,
-                Size = new Size(120, 120),
+                Dock = DockStyle.Fill,
                 SizeMode = PictureBoxSizeMode.Zoom
             };
             outline.Controls.Add(itemPicture, 1, 1);
@@ -133,16 +137,39 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemDescriptionTextbox, 2, 1);
 
-            //Ytterligare textbox fast med kanske någon annan typ av information??
-            itemDescriptionAdditionalTextbox = new TextBox()
+            outlinePriceInformation = new TableLayoutPanel()
             {
-                Dock = DockStyle.Fill,
-                Multiline = true,
-                ReadOnly = true,
-                Text = "Här kan man skriva något mer om man vill",
+                RowCount = 1,
+                ColumnCount = 3,
+                Dock = DockStyle.Fill
             };
-            outline.Controls.Add(itemDescriptionAdditionalTextbox, 1, 2);
-            outline.SetColumnSpan(itemDescriptionAdditionalTextbox, 2);
+            outline.Controls.Add(outlinePriceInformation, 1, 2);
+            outline.SetColumnSpan(outlinePriceInformation, 2);
+
+            //Addering av priceLabel
+            priceLabel = new Label()
+            {
+                Anchor = AnchorStyles.Left,
+                AutoSize = true,
+                Text = "Pris:",
+                Font = new Font("Microsoft Sans Serif", 11, FontStyle.Bold),
+            };
+            outlinePriceInformation.Controls.Add(priceLabel, 0, 0);
+
+            //Addering av priceTextbox
+            priceTextbox = new TextBox()
+            {
+                Anchor = AnchorStyles.Left,
+                ReadOnly = true
+            };
+            outlinePriceInformation.Controls.Add(priceTextbox, 1, 0);
+
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
+            outlinePriceInformation.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+
+
 
             //Knapp för att lägga till vara i itemCart, från itemList.
             addItemToCart = new Button()
@@ -178,10 +205,20 @@ namespace Butik_PGCJ
             addDiscount = new Button()
             {
                 Text = "Applicera rabatt",
-                Anchor = (AnchorStyles.Bottom | AnchorStyles.Left),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 AutoSize = true
             };
             outline.Controls.Add(addDiscount, 2, 5);
+            addDiscount.Click += discountButtonClicked;
+
+            // Label som visar om rabattkoden är giltig.
+            discountLabel = new Label()
+            {
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                Text = "",
+                AutoSize = true
+            };
+            outline.Controls.Add(discountLabel, 1, 6);
 
 
             //---------------Markerar slutet för kolumn 2 och 3---------------
@@ -237,6 +274,7 @@ namespace Butik_PGCJ
             sumTextbox = new TextBox()
             {
                 Anchor = AnchorStyles.Left,
+                ReadOnly = true
             };
             outlineBelowItemCart.Controls.Add(sumTextbox, 1, 0);
 
@@ -286,23 +324,39 @@ namespace Butik_PGCJ
                     ItemPic = values[2],
                     ItemDescr = values[3]
                 };
-                itemList.Items.Add(g.ItemName + " Pris :" + g.ItemPrice);
+                itemList.Items.Add(g.ItemName);
                 shopItems.Add(g);
             }
 
 
             //Inläsning från csv-fil "Discounts.csv"
-            string discountCodes = File.ReadAllText("Discounts.csv");
-
+            //string readCodes = File.ReadAllText("Discounts.csv");
+            
 
             //Sparar varukorgen till ShoppingCart.csv
 
-
         }
+
+        private void discountButtonClicked(object sender, EventArgs e)
+        {
+            string discountCodes = File.ReadAllText("Discounts.csv");
+
+            string enteredCode = discountTextbox.Text;
+            if (discountCodes.Contains(enteredCode))
+            {
+                discountLabel.Text = "Grattis, koden är giltig!";
+            }
+            else
+	        {
+                discountLabel.Text = "Tyvärr, koden är inte giltig!";
+            }
+        }
+
         private void ItemListBoxClicked(object sender, EventArgs e)
         {
             Guitar g = shopItems[itemList.SelectedIndex];
             itemDescriptionTextbox.Text = g.ItemDescr;
+            priceTextbox.Text = g.ItemPrice.ToString();
             itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
         }
 
@@ -321,6 +375,7 @@ namespace Butik_PGCJ
                 //item.SubItems.Add(shoppingCart[g].ToString());
             }
             UpdateListView(shoppingCart);
+            UpdateSum();
         }
 
         private void ItemCartRemClicked(object sender, EventArgs e)
@@ -331,7 +386,7 @@ namespace Butik_PGCJ
             {
                 if (item.Value > 1)
                 {
-                    shoppingCart[item.Key] = item.Value-1;
+                    shoppingCart[item.Key] = item.Value - 1;
                     UpdateListView(shoppingCart);
                 }
                 else
@@ -340,6 +395,7 @@ namespace Butik_PGCJ
                     itemCart.Items.Remove(itemCart.SelectedItems[0]);
                 }
             }
+            UpdateSum();
         }
 
         private void UpdateListView(Dictionary<Guitar, int> shoppingCart)
@@ -354,6 +410,23 @@ namespace Butik_PGCJ
                 item.Tag = pair.Key.ItemName;
                 itemCart.Items.Add(item);
             }
+
+
+
+            //string path = @"C:\Windows\Temp\test.txt";
+            //File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}", kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+        }
+
+        private void UpdateSum()
+        {
+            sumTextbox.Text = String.Empty;
+
+            int sumTotal = 0;
+            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            {
+                sumTotal += pair.Key.ItemPrice * pair.Value;
+            }
+            sumTextbox.Text = sumTotal.ToString();
         }
     }
 }
