@@ -21,9 +21,6 @@ namespace Butik_PGCJ
     //class Discount
     //{
     //    public string DiscountCodes;
-
-
-
     //}
 
 
@@ -335,6 +332,11 @@ namespace Butik_PGCJ
 
             //Sparar varukorgen till ShoppingCart.csv
 
+        }
+
+        private void appliedDiscount()
+        {
+            
         }
 
         private void discountButtonClicked(object sender, EventArgs e)
