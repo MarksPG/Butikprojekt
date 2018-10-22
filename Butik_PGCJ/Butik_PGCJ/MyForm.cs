@@ -18,7 +18,7 @@ namespace Butik_PGCJ
         public string ItemDescr;
     }
 
-    //class Discount
+    //class Store
     //{
     //    public string DiscountCodes;
     //}
@@ -30,6 +30,9 @@ namespace Butik_PGCJ
         Button addItemToCart = new Button();
         Button removeItemFromCart = new Button();
         Button addDiscount = new Button();
+        Button saveCart = new Button();
+        Button loadCart = new Button();
+        Button clearCart = new Button();
 
         ColumnHeader cartColumnItem = new ColumnHeader();
         ColumnHeader cartColumnPrice = new ColumnHeader();
@@ -56,6 +59,7 @@ namespace Butik_PGCJ
         TableLayoutPanel outline = new TableLayoutPanel();
         TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
         TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
+        TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
@@ -96,7 +100,7 @@ namespace Butik_PGCJ
                 Dock = DockStyle.Fill,
             };
             outline.Controls.Add(itemList);
-            outline.SetRowSpan(itemList, 5);
+            outline.SetRowSpan(itemList, 4);
             itemList.SelectedIndexChanged += ItemListBoxClicked;
 
             //---------------Markerar slutet för kolumn 1---------------
@@ -164,9 +168,7 @@ namespace Butik_PGCJ
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78));
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
-            outlinePriceInformation.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
-
-
+            //outlinePriceInformation.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
             //Knapp för att lägga till vara i itemCart, från itemList.
             addItemToCart = new Button()
@@ -241,7 +243,7 @@ namespace Butik_PGCJ
                 View = View.Details,
                 MultiSelect = false
             };
-            outline.SetRowSpan(itemCart, 5);
+            outline.SetRowSpan(itemCart, 4);
             outline.Controls.Add(itemCart, 3, 1);
 
             itemCart.Columns.Add("Vara");
@@ -255,7 +257,7 @@ namespace Butik_PGCJ
                 ColumnCount = 3,
                 Dock = DockStyle.Fill
             };
-            outline.Controls.Add(outlineBelowItemCart, 3, 6);
+            outline.Controls.Add(outlineBelowItemCart, 3, 5);
 
             //Addering av sumLabel
             sumLabel = new Label()
@@ -271,7 +273,8 @@ namespace Butik_PGCJ
             sumTextbox = new TextBox()
             {
                 Anchor = AnchorStyles.Left,
-                ReadOnly = true
+                ReadOnly = true,
+                Enabled = false
             };
             outlineBelowItemCart.Controls.Add(sumTextbox, 1, 0);
 
@@ -289,7 +292,48 @@ namespace Butik_PGCJ
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
 
-            outlineBelowItemCart.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+            //outlineBelowItemCart.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+
+            // Lägger till panel outlineLoadAndSave
+            outlineSaveAndLoad = new TableLayoutPanel()
+            {
+                RowCount = 1,
+                ColumnCount = 2,
+                Dock = DockStyle.Fill
+            };
+            outline.Controls.Add(outlineSaveAndLoad, 3, 6);
+
+            // Knapp som sparar varukorg
+            saveCart = new Button()
+            {
+                Text = "Spara varukorg",
+                Anchor = AnchorStyles.None,
+                AutoSize = true
+            };
+            outlineSaveAndLoad.Controls.Add(saveCart, 0, 0);
+            saveCart.Click += saveAllItemsFromCart;
+
+            loadCart = new Button()
+            {
+                Text = "Ladda varukorg",
+                Anchor = AnchorStyles.None,
+                AutoSize = true
+            };
+            outlineSaveAndLoad.Controls.Add(loadCart, 1, 0);
+            loadCart.Click += loadSavedCart;
+
+            outlineSaveAndLoad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            outlineSaveAndLoad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+
+            clearCart = new Button()
+            {
+                Text = "Töm varukorg",
+                Anchor = AnchorStyles.None,
+                AutoSize = true,
+                Dock = DockStyle.Fill
+            };
+            outline.Controls.Add(clearCart, 3, 7);
+            clearCart.Click += removeAllItemsFromCart;
 
             //---------------Markerar slutet för kolumn 4---------------
 
@@ -305,7 +349,7 @@ namespace Butik_PGCJ
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
 
-            outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
+            //outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
             //Inläsning från csv-fil "VendingSupply.csv" och addering till Lista fylld
             //med objekt av typen klassen Guitar
@@ -324,14 +368,39 @@ namespace Butik_PGCJ
                 itemList.Items.Add(g.ItemName);
                 shopItems.Add(g);
             }
+        }
 
+        private void saveAllItemsFromCart(object sender, EventArgs e)
+        {
+            string path = @"C:\Windows\Temp\savedCart.txt";
+            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}", kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+        }
 
-            //Inläsning från csv-fil "Discounts.csv"
-            //string readCodes = File.ReadAllText("Discounts.csv");
-            
+        private void removeAllItemsFromCart(object sender, EventArgs e)
+        {
+            itemCart.Items.Clear();
+            shoppingCart.Clear();
+            sumTextbox.Text = "";
+        }
 
-            //Sparar varukorgen till ShoppingCart.csv
-
+        private void loadSavedCart(object sender, EventArgs e)
+        {
+            string[] lines = File.ReadAllLines(@"C:\Windows\Temp\savedCart.txt");
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Guitar g = new Guitar
+                {
+                    ItemName = values[0],
+                    ItemPrice = int.Parse(values[1]),
+                    ItemPic = values[2],
+                    ItemDescr = values[3]
+                };
+                shoppingCart.Add(g, int.Parse(values[4]));
+            }
+            UpdateListView(shoppingCart);
+            UpdateSum();
+            loadCart.Enabled = false;
         }
 
         private void appliedDiscount()
@@ -365,16 +434,14 @@ namespace Butik_PGCJ
         private void ItemCartAddClicked(object sender, EventArgs e)
         {
             Guitar g = shopItems[itemList.SelectedIndex];
-            if (shoppingCart.ContainsKey(g) == false)
+            var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == g.ItemName);
+            if (shoppingCart.ContainsKey(g) || index.Key != null)
             {
-                shoppingCart.Add(g, 1);
-                //item = new ListViewItem(g.ItemName);
-                //itemCart.Items.Add(item);
+                shoppingCart[index.Key]++;
             }
             else
             {
-                shoppingCart[g]++;
-                //item.SubItems.Add(shoppingCart[g].ToString());
+                shoppingCart.Add(g, 1);
             }
             UpdateListView(shoppingCart);
             UpdateSum();
@@ -412,11 +479,6 @@ namespace Butik_PGCJ
                 item.Tag = pair.Key.ItemName;
                 itemCart.Items.Add(item);
             }
-
-
-
-            //string path = @"C:\Windows\Temp\test.txt";
-            //File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}", kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
         }
 
         private void UpdateSum()
