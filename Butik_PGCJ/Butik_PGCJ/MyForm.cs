@@ -18,11 +18,35 @@ namespace Butik_PGCJ
         public string ItemDescr;
     }
 
-    //class Store
-    //{
-    //    public string DiscountCodes;
-    //}
+    class Discount
+    {
+        public string DiscountName;
+        public int DiscountValue;
 
+        public static List<Discount> ReadDiscountFile()
+        {
+            string[] lines = File.ReadAllLines("Discounts.csv");
+            List<Discount> discountItem = new List<Discount> { };
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Discount d = new Discount
+                {
+                    DiscountName = values[0],
+                    DiscountValue = int.Parse(values[1])
+                };
+                discountItem.Add(d);
+            }
+            return discountItem;
+        }
+    }
+
+    class Store
+    {
+
+
+
+    }
 
     class MyForm : Form
     {
@@ -351,6 +375,12 @@ namespace Butik_PGCJ
 
             //outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
+            
+        shopItems = ReadVendorFile();
+        }
+
+        public List<Guitar> ReadVendorFile()
+        {
             //Inläsning från csv-fil "VendingSupply.csv" och addering till Lista fylld
             //med objekt av typen klassen Guitar
             string[] lines = File.ReadAllLines("VendingSupply.csv");
@@ -368,6 +398,7 @@ namespace Butik_PGCJ
                 itemList.Items.Add(g.ItemName);
                 shopItems.Add(g);
             }
+            return shopItems;
         }
 
         private void saveAllItemsFromCart(object sender, EventArgs e)
@@ -405,20 +436,21 @@ namespace Butik_PGCJ
 
         private void appliedDiscount()
         {
-            
+
         }
 
         private void discountButtonClicked(object sender, EventArgs e)
         {
-            string discountCodes = File.ReadAllText("Discounts.csv");
-
+            List<Discount> discountItem = Discount.ReadDiscountFile();
             string enteredCode = discountTextbox.Text;
-            if (discountCodes.Contains(enteredCode))
+
+            if (discountItem.Any(d => d.DiscountName == enteredCode))
             {
                 discountLabel.Text = "Grattis, koden är giltig!";
+                //appliedDiscount(D)
             }
             else
-	        {
+            {
                 discountLabel.Text = "Tyvärr, koden är inte giltig!";
             }
         }
