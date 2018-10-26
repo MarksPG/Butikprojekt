@@ -41,11 +41,58 @@ namespace Butik_PGCJ
         }
     }
 
-    class Store
+    //class Store
+    //{
+    //}
+
+    class MyForm2 : Form
     {
+        public MyForm2()
+        {
+            ClientSize = new Size(400, 300);
 
+            TableLayoutPanel outlineReceipt = new TableLayoutPanel
+            {
+                RowCount = 4,
+                ColumnCount = 3,
+                Dock = DockStyle.Fill,
+            };
+            Controls.Add(outlineReceipt);
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
+            outlineReceipt.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
+            Label receipt = new Label()
+            {
+                Text = "Kvitto",
+                Font = new Font("Arial", 14, FontStyle.Bold | FontStyle.Underline),
+            };
+            outlineReceipt.Controls.Add(receipt, 0, 0);
 
+            Label quantity = new Label()
+            {
+                Text = "Antal",
+                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
+            };
+            outlineReceipt.Controls.Add(quantity, 0, 2);
+
+            Label itemName = new Label()
+            {
+                Text = "Artikel",
+                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
+            };
+            outlineReceipt.Controls.Add(itemName, 1, 2);
+
+            Label piecePrice = new Label()
+            {
+                Text = "á-Pris",
+                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
+            };
+            outlineReceipt.Controls.Add(piecePrice, 2, 2);
+
+        }
+        
     }
 
     class MyForm : Form
@@ -61,7 +108,9 @@ namespace Butik_PGCJ
         ColumnHeader cartColumnItem = new ColumnHeader();
         ColumnHeader cartColumnPrice = new ColumnHeader();
 
-        Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
+        double discountGlobalValue = 0;
+
+        public Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
 
         Label itemListLabel = new Label();
         Label itemDescriptionLabel = new Label();
@@ -310,6 +359,7 @@ namespace Butik_PGCJ
                 AutoSize = true
             };
             outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
+            doCheckout.Click += checkoutButtonClicked;
 
             //Addering av kolumner för outlineBelowItemCart
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 78));
@@ -375,8 +425,7 @@ namespace Butik_PGCJ
 
             //outline.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
-            
-        shopItems = ReadVendorFile();
+            shopItems = ReadVendorFile();
         }
 
         public List<Guitar> ReadVendorFile()
@@ -434,11 +483,6 @@ namespace Butik_PGCJ
             loadCart.Enabled = false;
         }
 
-        private void appliedDiscount()
-        {
-
-        }
-
         private void discountButtonClicked(object sender, EventArgs e)
         {
             List<Discount> discountItem = Discount.ReadDiscountFile();
@@ -446,13 +490,15 @@ namespace Butik_PGCJ
 
             if (discountItem.Any(d => d.DiscountName == enteredCode))
             {
+                int actualDiscount = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
                 discountLabel.Text = "Grattis, koden är giltig!";
-                //appliedDiscount(D)
+                discountGlobalValue = actualDiscount;
             }
             else
             {
                 discountLabel.Text = "Tyvärr, koden är inte giltig!";
             }
+            UpdateSum();
         }
 
         private void ItemListBoxClicked(object sender, EventArgs e)
@@ -513,16 +559,39 @@ namespace Butik_PGCJ
             }
         }
 
-        private void UpdateSum()
+        private double UpdateSum()
         {
             sumTextbox.Text = String.Empty;
+            double sumTotal = 0;
 
-            int sumTotal = 0;
-            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            if (discountGlobalValue > 0)
             {
-                sumTotal += pair.Key.ItemPrice * pair.Value;
+                foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+                {
+                    sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - discountGlobalValue / 100);
+                }
+            }
+            else
+            {
+                foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+                {
+                    sumTotal += pair.Key.ItemPrice * pair.Value;
+                }
             }
             sumTextbox.Text = sumTotal.ToString();
+            return sumTotal;
+        }
+
+        private void checkoutButtonClicked(object sender, EventArgs e)
+        {
+            var myForm = new MyForm2();
+            myForm.StartPosition = FormStartPosition.CenterScreen;
+            myForm.BackColor = Color.White;
+            myForm.Show();
+
+
+            //string test = UpdateSum().ToString();
+            //MessageBox.Show(test);
         }
     }
 }
