@@ -63,6 +63,20 @@ namespace Butik_PGCJ
             outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
             outlineReceipt.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
+            ListView itemReceipt;
+            itemReceipt = new ListView()
+            {
+                Anchor = AnchorStyles.Top,
+                Dock = DockStyle.Fill,
+                View = View.Details,
+                MultiSelect = false
+            };
+            outlineReceipt.SetRowSpan(itemReceipt, 1);
+            outlineReceipt.SetColumnSpan(itemReceipt, 3);
+            outlineReceipt.Controls.Add(itemReceipt, 1, 2);
+
+            //ListViewItem item;
+
             Label receipt = new Label()
             {
                 Text = "Kvitto",
@@ -91,6 +105,8 @@ namespace Butik_PGCJ
             };
             outlineReceipt.Controls.Add(piecePrice, 2, 2);
 
+            Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
+
         }
         
     }
@@ -110,7 +126,7 @@ namespace Butik_PGCJ
 
         double discountGlobalValue = 0;
 
-        public Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
+        public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
 
         Label itemListLabel = new Label();
         Label itemDescriptionLabel = new Label();
