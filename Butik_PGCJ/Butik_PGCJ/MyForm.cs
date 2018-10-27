@@ -562,8 +562,11 @@ namespace Butik_PGCJ
             if (discountItem.Any(d => d.DiscountName == enteredCode))
             {
                 int actualDiscount = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
-                discountLabel.Text = "Grattis, koden är giltig!";
+                discountLabel.Text = "Grattis, koden är giltig och ger dig " + actualDiscount + "% på allt du köper!";
                 discountGlobalValue = actualDiscount;
+                addDiscount.Enabled = false;
+                discountTextbox.Text = "Du har redan angivit en rabattkod!";
+                discountTextbox.ReadOnly = true;
             }
             else
             {
