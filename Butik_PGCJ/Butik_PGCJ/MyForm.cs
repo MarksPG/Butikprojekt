@@ -50,6 +50,7 @@ namespace Butik_PGCJ
         public MyForm2()
         {
             Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
+            double discountGlobalValue = MyForm.discountGlobalValue;
 
             ClientSize = new Size(400, 300);
 
@@ -155,14 +156,25 @@ namespace Butik_PGCJ
                 dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice);
             }
 
-            Label totalPriceLabel = new Label()
+            Label totalPriceLabelText = new Label()
             {
                 Text = "Totalpris",
                 AutoSize = true,
                 Font = new Font("Arial", 12, FontStyle.Bold),
                 Anchor = AnchorStyles.Right | AnchorStyles.Top,
             };
-            outlineReceipt.Controls.Add(totalPriceLabel, 1, 4);
+            outlineReceipt.Controls.Add(totalPriceLabelText, 1, 4);
+
+            Label totalPriceLabel = new Label()
+            {
+                Text = MyForm.UpdateSum().ToString() + " kr",
+                AutoSize = true,
+                Font = new Font("Arial", 12, FontStyle.Bold),
+                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+            };
+            outlineReceipt.Controls.Add(totalPriceLabel, 2, 4);
+
+
         }
     }
 
@@ -179,7 +191,7 @@ namespace Butik_PGCJ
         ColumnHeader cartColumnItem = new ColumnHeader();
         ColumnHeader cartColumnPrice = new ColumnHeader();
 
-        double discountGlobalValue = 0;
+        public static double discountGlobalValue = 0;
 
         public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
 
@@ -208,7 +220,7 @@ namespace Butik_PGCJ
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox itemDescriptionAdditionalTextbox = new TextBox();
         TextBox discountTextbox = new TextBox();
-        TextBox sumTextbox = new TextBox();
+        static TextBox sumTextbox = new TextBox();
         TextBox priceTextbox = new TextBox();
 
         public MyForm()
@@ -633,7 +645,7 @@ namespace Butik_PGCJ
             }
         }
 
-        private double UpdateSum()
+        public static double UpdateSum()
         {
             sumTextbox.Text = String.Empty;
             double sumTotal = 0;
