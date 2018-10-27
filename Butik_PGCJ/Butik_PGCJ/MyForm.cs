@@ -49,33 +49,30 @@ namespace Butik_PGCJ
     {
         public MyForm2()
         {
+            Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
+
             ClientSize = new Size(400, 300);
 
             TableLayoutPanel outlineReceipt = new TableLayoutPanel
             {
-                RowCount = 4,
+                RowCount = 6,
                 ColumnCount = 3,
                 Dock = DockStyle.Fill,
+                AutoSize = true
             };
             Controls.Add(outlineReceipt);
-            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
-            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
-            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33));
-            outlineReceipt.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
-            ListView itemReceipt;
-            itemReceipt = new ListView()
-            {
-                Anchor = AnchorStyles.Top,
-                Dock = DockStyle.Fill,
-                View = View.Details,
-                MultiSelect = false
-            };
-            outlineReceipt.SetRowSpan(itemReceipt, 1);
-            outlineReceipt.SetColumnSpan(itemReceipt, 3);
-            outlineReceipt.Controls.Add(itemReceipt, 1, 2);
-
-            //ListViewItem item;
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Absolute, 5));
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
+            outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            
+            //outlineReceipt.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
 
             Label receipt = new Label()
             {
@@ -84,31 +81,89 @@ namespace Butik_PGCJ
             };
             outlineReceipt.Controls.Add(receipt, 0, 0);
 
-            Label quantity = new Label()
-            {
-                Text = "Antal",
-                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
-            };
-            outlineReceipt.Controls.Add(quantity, 0, 2);
-
             Label itemName = new Label()
             {
+                Anchor = AnchorStyles.Left,
                 Text = "Artikel",
-                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
+                Font = new Font("Arial", 12, FontStyle.Bold),
             };
-            outlineReceipt.Controls.Add(itemName, 1, 2);
+            outlineReceipt.Controls.Add(itemName, 0, 2);
+
+            Label quantity = new Label()
+            {
+                Anchor = AnchorStyles.Left,
+                Text = "Antal",
+                Font = new Font("Arial", 12, FontStyle.Bold),
+                
+            };
+            outlineReceipt.Controls.Add(quantity, 1, 2);
 
             Label piecePrice = new Label()
             {
+                Anchor = AnchorStyles.Left,
                 Text = "á-Pris",
-                Font = new Font("Arial", 12, FontStyle.Bold | FontStyle.Underline),
+                Font = new Font("Arial", 12, FontStyle.Bold),
             };
             outlineReceipt.Controls.Add(piecePrice, 2, 2);
 
-            Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
+            DataGridView dtgv = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoSize = true,
+                CellBorderStyle = DataGridViewCellBorderStyle.None,
+                RowHeadersVisible = false,
+                ColumnHeadersVisible = false,
+                BackgroundColor = Color.White,
+                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+                AllowUserToResizeColumns = false,
+                AllowUserToResizeRows = false,
+            };
+            outlineReceipt.Controls.Add(dtgv, 0, 3);
+            outlineReceipt.SetColumnSpan(dtgv, 3);
 
+            dtgv.DefaultCellStyle.SelectionBackColor = dtgv.DefaultCellStyle.BackColor;
+            dtgv.DefaultCellStyle.SelectionForeColor = dtgv.DefaultCellStyle.ForeColor;
+
+            DataGridViewTextBoxColumn itemNameGrid = new DataGridViewTextBoxColumn
+            {
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 51,
+                ReadOnly = true,
+            };
+
+            DataGridViewTextBoxColumn quantityGrid = new DataGridViewTextBoxColumn
+            {
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 25,
+                ReadOnly = true,
+            };
+
+            DataGridViewTextBoxColumn priceGrid = new DataGridViewTextBoxColumn
+            {
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                FillWeight = 23,
+                ReadOnly = true,
+            };
+
+            dtgv.Columns.AddRange(new DataGridViewColumn[]
+            {
+                itemNameGrid, quantityGrid, priceGrid
+            });
+
+            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            {
+                dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice);
+            }
+
+            Label totalPriceLabel = new Label()
+            {
+                Text = "Totalpris",
+                AutoSize = true,
+                Font = new Font("Arial", 12, FontStyle.Bold),
+                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+            };
+            outlineReceipt.Controls.Add(totalPriceLabel, 1, 4);
         }
-        
     }
 
     class MyForm : Form
@@ -604,10 +659,6 @@ namespace Butik_PGCJ
             myForm.StartPosition = FormStartPosition.CenterScreen;
             myForm.BackColor = Color.White;
             myForm.Show();
-
-
-            //string test = UpdateSum().ToString();
-            //MessageBox.Show(test);
         }
     }
 }
