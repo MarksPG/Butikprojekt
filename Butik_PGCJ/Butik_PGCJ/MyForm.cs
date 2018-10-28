@@ -49,6 +49,8 @@ namespace Butik_PGCJ
     {
         public MyForm2()
         {
+            Icon = new Icon(@"Pictures\guitar_icon.ico");
+            Text = "PGCJ Gitarraffär - Tack för att du handlat hos oss.";
             Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
             double discountGlobalValue = MyForm.discountGlobalValue;
 
@@ -227,6 +229,9 @@ namespace Butik_PGCJ
         {
             //Talar om storleken på winform vid uppstart
             ClientSize = new Size(850, 550);
+            Icon = new Icon(@"Pictures\guitar_icon.ico");
+            Text = "PGCJ Gitarraffär - plocka dina strängar online";
+
 
             //Skapar rutnät
             outline = new TableLayoutPanel
@@ -281,7 +286,8 @@ namespace Butik_PGCJ
                 BorderStyle = BorderStyle.FixedSingle,
                 Anchor = AnchorStyles.None,
                 Dock = DockStyle.Fill,
-                SizeMode = PictureBoxSizeMode.Zoom
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.White
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
@@ -291,6 +297,7 @@ namespace Butik_PGCJ
                 Dock = DockStyle.Fill,
                 Multiline = true,
                 ReadOnly = true,
+                BackColor = Color.White
             };
             outline.Controls.Add(itemDescriptionTextbox, 2, 1);
 
@@ -355,6 +362,7 @@ namespace Butik_PGCJ
                 Dock = DockStyle.Bottom,
             };
             outline.Controls.Add(discountTextbox, 1, 5);
+            discountTextbox.Click += discountTextBoxClicked;
 
             //Knapp där användaren trycker för att applicera rabattkoden
             addDiscount = new Button()
@@ -566,6 +574,11 @@ namespace Butik_PGCJ
             loadCart.Enabled = false;
         }
 
+        private void discountTextBoxClicked(object sender, EventArgs e)
+        {
+            discountTextbox.Text = string.Empty;
+        }
+
         private void discountButtonClicked(object sender, EventArgs e)
         {
             List<Discount> discountItem = Discount.ReadDiscountFile();
@@ -578,7 +591,8 @@ namespace Butik_PGCJ
                 discountGlobalValue = actualDiscount;
                 addDiscount.Enabled = false;
                 discountTextbox.Text = "Du har redan angivit en rabattkod!";
-                discountTextbox.ReadOnly = true;
+                discountTextbox.ReadOnly = true;                                // Kanske onödig..
+                discountTextbox.Enabled = false;
             }
             else
             {
@@ -591,7 +605,7 @@ namespace Butik_PGCJ
         {
             Guitar g = shopItems[itemList.SelectedIndex];
             itemDescriptionTextbox.Text = g.ItemDescr;
-            priceTextbox.Text = g.ItemPrice.ToString();
+            priceTextbox.Text = g.ItemPrice.ToString() + " kr";
             itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
         }
 
@@ -664,7 +678,7 @@ namespace Butik_PGCJ
                     sumTotal += pair.Key.ItemPrice * pair.Value;
                 }
             }
-            sumTextbox.Text = sumTotal.ToString();
+            sumTextbox.Text = sumTotal.ToString() + " kr";
             return sumTotal;
         }
 
