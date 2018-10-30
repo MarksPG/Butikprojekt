@@ -16,6 +16,26 @@ namespace Butik_PGCJ
         public int ItemPrice;
         public string ItemPic;
         public string ItemDescr;
+
+        public static List<Guitar> ReadVendorFile()
+        {
+            string[] lines = File.ReadAllLines("VendingSupply.csv");
+            List<Guitar> shopItems = new List<Guitar> { };
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Guitar g = new Guitar
+                {
+                    ItemName = values[0],
+                    ItemPrice = int.Parse(values[1]),
+                    ItemPic = values[2],
+                    ItemDescr = values[3]
+                };
+                MyForm.itemList.Items.Add(g.ItemName);
+                shopItems.Add(g);
+            }
+            return shopItems;
+        }
     }
 
     class Discount
@@ -45,10 +65,14 @@ namespace Butik_PGCJ
     //{
     //}
 
-    
-
     class MyForm : Form
     {
+        // Global
+        public static double discountGlobalValue = 0;
+        public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
+        public static ListBox itemList;
+
+        // Non global
         Button doCheckout = new Button();
         Button addItemToCart = new Button();
         Button removeItemFromCart = new Button();
@@ -57,20 +81,13 @@ namespace Butik_PGCJ
         Button loadCart = new Button();
         Button clearCart = new Button();
 
-        public static double discountGlobalValue = 0;
-
-        public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
-
-        Label itemListLabel = new Label();
         Label itemDescriptionLabel = new Label();
         Label itemCartLabel = new Label();
-        Label sumLabel = new Label();
-        Label priceLabel = new Label();
+        Label actualPriceLabel = new Label();
         Label discountLabel = new Label();
+        static Label sumLabel = new Label();
 
         List<Guitar> shopItems = new List<Guitar>();
-
-        ListBox itemList;
 
         ListView itemCart = new ListView();
 
@@ -84,17 +101,20 @@ namespace Butik_PGCJ
         TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
-        TextBox itemDescriptionAdditionalTextbox = new TextBox();
         TextBox discountTextbox = new TextBox();
-        static TextBox sumTextbox = new TextBox();
-        TextBox priceTextbox = new TextBox();
 
         public MyForm()
         {
-            //Talar om storleken på winform vid uppstart
-            ClientSize = new Size(850, 550);
+            // Sets clientsize
+            ClientSize = new Size(780, 550);
+
+            // Icon for store
             Icon = new Icon(@"Pictures\guitar_icon.ico");
+            
+            // Name of store
             Text = "PGCJ Gitarraffär - plocka dina strängar online";
+
+            BackColor = SystemColors.InactiveBorder;
 
             // Outlines
             outline = CreateOutline(8, 4);
@@ -110,38 +130,75 @@ namespace Butik_PGCJ
             outlineSaveAndLoad = CreateOutline(1, 2);
             outline.Controls.Add(outlineSaveAndLoad, 3, 6);
 
-            // Create rows & columns for outlines
+            // Rows & Columns for outlines
+            outline.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
+            outline.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
+            outline.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
+            for (int i = 0; i < 5; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }
 
+            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
+            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
 
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 67));
+
+            for (int i = 0; i < 2; i++) { outlineSaveAndLoad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50)); }
 
             // Labels
-            itemListLabel = CreateLabel(AnchorStyles.None, true, "Utbud");
-            outline.Controls.Add(itemListLabel, 0, 0);
+            outline.Controls.Add(CreateLabel(AnchorStyles.None, true, "Utbud"), 0, 0); // itemListLabel
 
             itemDescriptionLabel = CreateLabel(AnchorStyles.None, true, "Beskrivning av vara");
             outline.Controls.Add(itemDescriptionLabel, 1, 0);
             outline.SetColumnSpan(itemDescriptionLabel, 2);
 
-            priceLabel = CreateLabel(AnchorStyles.Left, true, "Pris:");
-            outlinePriceInformation.Controls.Add(priceLabel, 0, 0);
-            
+            outlinePriceInformation.Controls.Add(CreateLabel(AnchorStyles.Right, true, "Pris:"), 0, 0); // priceLabel
+
+            actualPriceLabel = CreateLabel(AnchorStyles.Left, true, "");
+            outlinePriceInformation.Controls.Add(actualPriceLabel, 1, 0);
+
             discountLabel = CreateLabel(AnchorStyles.Top | AnchorStyles.Left, true, "");
             outline.Controls.Add(discountLabel, 1, 6);
             outline.SetColumnSpan(discountLabel, 2);
 
-            sumLabel = CreateLabel(AnchorStyles.Left, true, "Summa:");
-            outlineBelowItemCart.Controls.Add(sumLabel, 0, 0);
+            outlineBelowItemCart.Controls.Add(CreateLabel(AnchorStyles.Left, true, "Summa:"), 0, 0); // sumLabel
 
             itemCartLabel = CreateLabel(AnchorStyles.None, true, "Varukorg");
             outline.Controls.Add(itemCartLabel, 3, 0);
 
+            sumLabel = new Label
+            {
+                Anchor = AnchorStyles.None,
+                AutoSize = true,
+                Font = new Font("Arial", 11)
+            };
+            outlineBelowItemCart.Controls.Add(sumLabel, 1, 0);
+
             // Buttons
-            addItemToCart = CreateButton(AnchorStyles.None, "Lägg till vara -->");
+            addItemToCart = new Button
+            {
+                Anchor = AnchorStyles.None,
+                AutoSize = true,
+                Text = "Lägg till vara -->",
+                Size = new Size(150, 40),
+                Font = new Font("Arial", 9),
+                BackColor = Color.DarkKhaki
+            };
             outline.Controls.Add(addItemToCart, 1, 3);
             outline.SetColumnSpan(addItemToCart, 2);
             addItemToCart.Click += ItemCartAddClicked;
 
-            removeItemFromCart = CreateButton(AnchorStyles.None, "<-- Ta bort vara");
+            removeItemFromCart = new Button
+            {
+                Anchor = AnchorStyles.Top,
+                AutoSize = true,
+                Text = "<-- Ta bort vara",
+                Size = new Size(150, 40),
+                Font = new Font("Arial", 9),
+                BackColor = Color.DarkKhaki
+            };
             outline.Controls.Add(removeItemFromCart, 1, 4);
             outline.SetColumnSpan(removeItemFromCart, 2);
             removeItemFromCart.Click += ItemCartRemClicked;
@@ -158,7 +215,7 @@ namespace Butik_PGCJ
             outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
             doCheckout.Click += checkoutButtonClicked;
 
-            addDiscount = CreateButton(AnchorStyles.Bottom | AnchorStyles.Left, "Applicera rabatt");
+            addDiscount = CreateButton(AnchorStyles.None | AnchorStyles.Left, "Applicera rabatt");
             outline.Controls.Add(addDiscount, 2, 5);
             addDiscount.Click += discountButtonClicked;
 
@@ -172,17 +229,54 @@ namespace Butik_PGCJ
             outline.Controls.Add(clearCart, 3, 7);
             clearCart.Click += removeAllItemsFromCart;
 
-            //Lista över tillgänliga varor i shoppen
+            // Textbox
+            itemDescriptionTextbox = new TextBox()
+            {
+                Dock = DockStyle.Fill,
+                Multiline = true,
+                ReadOnly = true,
+                BackColor = Color.White,
+                Font = new Font("Arial", 9)
+            };
+            outline.Controls.Add(itemDescriptionTextbox, 2, 1);
+
+            discountTextbox = new TextBox()
+            {
+                Text = "Skriv in rabattkod här...",
+                Anchor = AnchorStyles.None,
+                Size = new Size(140, 0)
+            };
+            outline.Controls.Add(discountTextbox, 1, 5);
+            discountTextbox.Click += discountTextBoxClicked;
+
+            // Itemlist (products)
             itemList = new ListBox()
             {
                 Anchor = AnchorStyles.Top,
                 Dock = DockStyle.Fill,
+                Font = new Font("Arial", 10)
             };
             outline.Controls.Add(itemList);
             outline.SetRowSpan(itemList, 4);
             itemList.SelectedIndexChanged += ItemListBoxClicked;
-            
-            //Picturebox
+
+            // ListView (cart)
+            itemCart = new ListView()
+            {
+                Anchor = AnchorStyles.Top,
+                Dock = DockStyle.Fill,
+                View = View.Details,
+                MultiSelect = false,
+                Font = new Font("Arial", 10)
+            };
+            outline.SetRowSpan(itemCart, 4);
+            outline.Controls.Add(itemCart, 3, 1);
+
+            itemCart.Columns.Add("Vara").Width = 125;
+            itemCart.Columns.Add("Antal").Width = 45;
+            itemCart.Columns.Add("Pris").Width = 50;
+
+            // Picturebox
             itemPicture = new PictureBox()
             {
                 BorderStyle = BorderStyle.FixedSingle,
@@ -193,99 +287,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
-            //Textbox med huvudinformation om varan
-            itemDescriptionTextbox = new TextBox()
-            {
-                Dock = DockStyle.Fill,
-                Multiline = true,
-                ReadOnly = true,
-                BackColor = Color.White
-            };
-            outline.Controls.Add(itemDescriptionTextbox, 2, 1);
-
-            //Addering av priceTextbox
-            priceTextbox = new TextBox()
-            {
-                Anchor = AnchorStyles.Left,
-                ReadOnly = true
-            };
-            outlinePriceInformation.Controls.Add(priceTextbox, 1, 0);
-
-            discountTextbox = new TextBox()
-            {
-                Text = "Skriv in rabattkod här...",
-                Dock = DockStyle.Bottom,
-            };
-            outline.Controls.Add(discountTextbox, 1, 5);
-            discountTextbox.Click += discountTextBoxClicked;
-
-            sumTextbox = new TextBox()
-            {
-                Anchor = AnchorStyles.Left,
-                ReadOnly = true,
-                Enabled = false
-            };
-            outlineBelowItemCart.Controls.Add(sumTextbox, 1, 0);
-
-            
-
-            
-
-            //ListView där adderade varor visas.
-            itemCart = new ListView()
-            {
-                Anchor = AnchorStyles.Top,
-                Dock = DockStyle.Fill,
-                View = View.Details,
-                MultiSelect = false
-            };
-            outline.SetRowSpan(itemCart, 4);
-            outline.Controls.Add(itemCart, 3, 1);
-
-            itemCart.Columns.Add("Vara");
-            itemCart.Columns.Add("Antal");
-            itemCart.Columns.Add("Pris");
-            
-            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
-            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-            outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-
-            outlineSaveAndLoad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            outlineSaveAndLoad.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-
-            outline.RowStyles.Add(new RowStyle(SizeType.Absolute, 35));
-            outline.RowStyles.Add(new RowStyle(SizeType.Percent, 25));
-            outline.RowStyles.Add(new RowStyle(SizeType.Percent, 15));
-            for (int i = 0; i < 6; i++) { outline.RowStyles.Add(new RowStyle(SizeType.Percent, 10)); }
-
-            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
-            outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
-
-            shopItems = ReadVendorFile();
-        }
-
-        public List<Guitar> ReadVendorFile()
-        {
-            //Inläsning från csv-fil "VendingSupply.csv" och addering till Lista fylld
-            //med objekt av typen klassen Guitar
-            string[] lines = File.ReadAllLines("VendingSupply.csv");
-            shopItems = new List<Guitar> { };
-            foreach (string line in lines)
-            {
-                string[] values = line.Split(',');
-                Guitar g = new Guitar
-                {
-                    ItemName = values[0],
-                    ItemPrice = int.Parse(values[1]),
-                    ItemPic = values[2],
-                    ItemDescr = values[3]
-                };
-                itemList.Items.Add(g.ItemName);
-                shopItems.Add(g);
-            }
-            return shopItems;
+            shopItems = Guitar.ReadVendorFile();
         }
 
         private void saveAllItemsFromCart(object sender, EventArgs e)
@@ -298,7 +300,7 @@ namespace Butik_PGCJ
         {
             itemCart.Items.Clear();
             shoppingCart.Clear();
-            sumTextbox.Text = "";
+            sumLabel.Text = "";
         }
 
         private void loadSavedCart(object sender, EventArgs e)
@@ -315,7 +317,6 @@ namespace Butik_PGCJ
                     ItemDescr = values[3]
                 };
 
-                
                 var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == g.ItemName);
                 if (shoppingCart.ContainsKey(g) || index.Key != null)
                 {
@@ -325,9 +326,6 @@ namespace Butik_PGCJ
                 {
                     shoppingCart.Add(g, 1);
                 }
-                
-
-                //shoppingCart.Add(g, int.Parse(values[4]));
             }
             UpdateListView(shoppingCart);
             UpdateSum();
@@ -365,7 +363,7 @@ namespace Butik_PGCJ
         {
             Guitar g = shopItems[itemList.SelectedIndex];
             itemDescriptionTextbox.Text = g.ItemDescr;
-            priceTextbox.Text = g.ItemPrice.ToString() + " kr";
+            actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
             itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
         }
 
@@ -435,7 +433,7 @@ namespace Butik_PGCJ
 
         public static double UpdateSum()
         {
-            sumTextbox.Text = String.Empty;
+            sumLabel.Text = String.Empty;
             double sumTotal = 0;
 
             if (discountGlobalValue > 0)
@@ -452,7 +450,7 @@ namespace Butik_PGCJ
                     sumTotal += pair.Key.ItemPrice * pair.Value;
                 }
             }
-            sumTextbox.Text = sumTotal.ToString() + " kr";
+            sumLabel.Text = sumTotal.ToString() + " kr";
             return sumTotal;
         }
 
@@ -481,7 +479,7 @@ namespace Butik_PGCJ
                 Anchor = anchor,
                 AutoSize = value,
                 Text = name,
-                Font = new Font("Microsoft Sans Serif", 12, FontStyle.Bold)
+                Font = new Font("Arial", 12, FontStyle.Bold)
             };
         }
 
@@ -508,6 +506,7 @@ namespace Butik_PGCJ
 
             ClientSize = new Size(400, 300);
 
+            // Outline
             TableLayoutPanel outlineReceipt = new TableLayoutPanel
             {
                 RowCount = 6,
@@ -517,6 +516,7 @@ namespace Butik_PGCJ
             };
             Controls.Add(outlineReceipt);
 
+            // Rows & Columns
             outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
             outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Absolute, 5));
             outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
@@ -524,43 +524,31 @@ namespace Butik_PGCJ
             outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 10));
             outlineReceipt.RowStyles.Add(new RowStyle(SizeType.Percent, 5));
             outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
-            outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+            for (int i = 0; i < 2; i++) { outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
-            //outlineReceipt.CellBorderStyle = TableLayoutPanelCellBorderStyle.Outset;
-
+            // Labels
             Label receipt = new Label()
             {
+                Anchor = AnchorStyles.Left,
                 Text = "Kvitto",
                 Font = new Font("Arial", 14, FontStyle.Bold | FontStyle.Underline),
             };
             outlineReceipt.Controls.Add(receipt, 0, 0);
 
-            Label itemName = new Label()
+            Label totalPriceLabel = new Label()
             {
-                Anchor = AnchorStyles.Left,
-                Text = "Artikel",
+                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+                Text = MyForm.UpdateSum().ToString() + " kr",
                 Font = new Font("Arial", 12, FontStyle.Bold),
             };
-            outlineReceipt.Controls.Add(itemName, 0, 2);
+            outlineReceipt.Controls.Add(totalPriceLabel, 2, 4);
 
-            Label quantity = new Label()
-            {
-                Anchor = AnchorStyles.Left,
-                Text = "Antal",
-                Font = new Font("Arial", 12, FontStyle.Bold),
+            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "Artikel"), 0, 2); // itemName
+            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "Antal"), 1, 2); // quantity
+            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Right | AnchorStyles.Top, "Totalpris:"), 1, 4); // totalPriceLabelText
+            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "á-Pris"), 2, 2); // pricePrice
 
-            };
-            outlineReceipt.Controls.Add(quantity, 1, 2);
-
-            Label piecePrice = new Label()
-            {
-                Anchor = AnchorStyles.Left,
-                Text = "á-Pris",
-                Font = new Font("Arial", 12, FontStyle.Bold),
-            };
-            outlineReceipt.Controls.Add(piecePrice, 2, 2);
-
+            // DataGridView
             DataGridView dtgv = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -576,23 +564,23 @@ namespace Butik_PGCJ
             outlineReceipt.Controls.Add(dtgv, 0, 3);
             outlineReceipt.SetColumnSpan(dtgv, 3);
 
+            // DataGridView cellstyle
             dtgv.DefaultCellStyle.SelectionBackColor = dtgv.DefaultCellStyle.BackColor;
             dtgv.DefaultCellStyle.SelectionForeColor = dtgv.DefaultCellStyle.ForeColor;
 
+            // DataGridViewColumns
             DataGridViewTextBoxColumn itemNameGrid = new DataGridViewTextBoxColumn
             {
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 51,
                 ReadOnly = true,
             };
-
             DataGridViewTextBoxColumn quantityGrid = new DataGridViewTextBoxColumn
             {
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
                 FillWeight = 25,
                 ReadOnly = true,
             };
-
             DataGridViewTextBoxColumn priceGrid = new DataGridViewTextBoxColumn
             {
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
@@ -600,33 +588,28 @@ namespace Butik_PGCJ
                 ReadOnly = true,
             };
 
+            // Adding columns to DataGridView
             dtgv.Columns.AddRange(new DataGridViewColumn[]
             {
                 itemNameGrid, quantityGrid, priceGrid
             });
 
+            // Sums dictionary and displays at receipt
             foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
             {
                 dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice);
             }
+        }
 
-            Label totalPriceLabelText = new Label()
+        private static Label CreateLabel(AnchorStyles anchor, string name)
+        {
+            return new Label
             {
-                Text = "Totalpris",
+                Anchor = anchor,
+                Text = name,
                 AutoSize = true,
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+                Font = new Font("Arial", 12, FontStyle.Bold)
             };
-            outlineReceipt.Controls.Add(totalPriceLabelText, 1, 4);
-
-            Label totalPriceLabel = new Label()
-            {
-                Text = MyForm.UpdateSum().ToString() + " kr",
-                AutoSize = true,
-                Font = new Font("Arial", 12, FontStyle.Bold),
-                Anchor = AnchorStyles.Right | AnchorStyles.Top,
-            };
-            outlineReceipt.Controls.Add(totalPriceLabel, 2, 4);
         }
     }
 }
