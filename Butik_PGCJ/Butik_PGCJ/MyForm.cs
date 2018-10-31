@@ -80,6 +80,8 @@ namespace Butik_PGCJ
         Button saveCart = new Button();
         Button loadCart = new Button();
         Button clearCart = new Button();
+        Button loadGuitars = new Button();
+        Button loadAccessories = new Button();
 
         Label itemDescriptionLabel = new Label();
         Label itemCartLabel = new Label();
@@ -97,6 +99,7 @@ namespace Butik_PGCJ
 
         TableLayoutPanel outline = new TableLayoutPanel();
         TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
+        TableLayoutPanel outlineBelowShopItems = new TableLayoutPanel();
         TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
         TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
 
@@ -123,6 +126,9 @@ namespace Butik_PGCJ
 
             outlineBelowItemCart = CreateOutline(1, 3);
             outline.Controls.Add(outlineBelowItemCart, 3, 5);
+
+            outlineBelowShopItems = CreateOutline(1, 2);
+            outline.Controls.Add(outlineBelowShopItems, 0, 5);
 
             outlinePriceInformation = CreateOutline(1, 3);
             outline.Controls.Add(outlinePriceInformation, 1, 2);
@@ -203,6 +209,15 @@ namespace Butik_PGCJ
             outline.Controls.Add(removeItemFromCart, 1, 4);
             outline.SetColumnSpan(removeItemFromCart, 2);
             removeItemFromCart.Click += ItemCartRemClicked;
+
+            loadGuitars = CreateButton(AnchorStyles.None, "Visa gitarrer");
+            outlineBelowShopItems.Controls.Add(loadGuitars, 0, 0);
+            saveCart.Click += saveAllItemsFromCart;
+
+            loadAccessories = CreateButton(AnchorStyles.None, "Visa tillbehör");
+            outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
+            saveCart.Click += saveAllItemsFromCart;
+
 
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
             outlineSaveAndLoad.Controls.Add(saveCart, 0, 0);
@@ -614,7 +629,7 @@ namespace Butik_PGCJ
             // Sums dictionary and displays at receipt
             foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
             {
-                dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice);
+                dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice + " kr");
             }
         }
 
