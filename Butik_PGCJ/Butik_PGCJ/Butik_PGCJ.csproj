@@ -62,9 +62,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Pictures\guitar-test-sample.jpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Pictures\guitar_icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

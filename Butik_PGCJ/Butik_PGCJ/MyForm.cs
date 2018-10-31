@@ -110,10 +110,11 @@ namespace Butik_PGCJ
 
             // Icon for store
             Icon = new Icon(@"Pictures\guitar_icon.ico");
-            
+
             // Name of store
             Text = "PGCJ Gitarraffär - plocka dina strängar online";
-
+            
+            // Background color of MyForm
             BackColor = SystemColors.InactiveBorder;
 
             // Outlines
@@ -248,6 +249,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(discountTextbox, 1, 5);
             discountTextbox.Click += discountTextBoxClicked;
+            discountTextbox.KeyDown += discountTextBox_KeyDown;
 
             // Itemlist (products)
             itemList = new ListBox()
@@ -337,18 +339,26 @@ namespace Butik_PGCJ
             discountTextbox.Text = string.Empty;
         }
 
+        private void discountTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                discountButtonClicked(this, new EventArgs());
+            }
+        }
+
         private void discountButtonClicked(object sender, EventArgs e)
         {
             List<Discount> discountItem = Discount.ReadDiscountFile();
             string enteredCode = discountTextbox.Text;
-
+            
             if (discountItem.Any(d => d.DiscountName == enteredCode))
             {
                 int actualDiscount = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
                 discountLabel.Text = "Grattis, koden är giltig och ger dig " + actualDiscount + "% på allt du köper!";
                 discountGlobalValue = actualDiscount;
                 addDiscount.Enabled = false;
-                discountTextbox.Text = "Du har redan angivit en rabattkod!";
+                discountTextbox.Text = "Du har angivit en rabattkod!";
                 discountTextbox.ReadOnly = true;                                // Kanske onödig..
                 discountTextbox.Enabled = false;
             }
@@ -361,10 +371,17 @@ namespace Butik_PGCJ
 
         private void ItemListBoxClicked(object sender, EventArgs e)
         {
-            Guitar g = shopItems[itemList.SelectedIndex];
-            itemDescriptionTextbox.Text = g.ItemDescr;
-            actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
-            itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
+            if (itemList.SelectedIndex < 0)
+            {
+                return;
+            }
+            else
+            {
+                Guitar g = shopItems[itemList.SelectedIndex];
+                itemDescriptionTextbox.Text = g.ItemDescr;
+                actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
+                itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
+            }
         }
 
         private void ItemCartAddClicked(object sender, EventArgs e)
