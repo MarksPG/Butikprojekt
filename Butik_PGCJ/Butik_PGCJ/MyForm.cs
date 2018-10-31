@@ -67,12 +67,12 @@ namespace Butik_PGCJ
 
     class MyForm : Form
     {
-        // Global
+        // Global initializing
         public static double discountGlobalValue = 0;
         public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
         public static ListBox itemList;
 
-        // Non global
+        // Non global initializing
         Button doCheckout = new Button();
         Button addItemToCart = new Button();
         Button removeItemFromCart = new Button();
@@ -345,7 +345,7 @@ namespace Butik_PGCJ
                 }
             }
             UpdateListView(shoppingCart);
-            UpdateSum();
+            UpdateSum(CalculateDictionary());
             loadCart.Enabled = false;
         }
 
@@ -381,7 +381,7 @@ namespace Butik_PGCJ
             {
                 discountLabel.Text = "Tyvärr, koden är inte giltig!";
             }
-            UpdateSum();
+            UpdateSum(CalculateDiscountDictionary());
         }
 
         private void ItemListBoxClicked(object sender, EventArgs e)
@@ -414,7 +414,7 @@ namespace Butik_PGCJ
                     shoppingCart.Add(g, 1);
                 }
                 UpdateListView(shoppingCart);
-                UpdateSum();
+                UpdateSum(CalculateDictionary());
             }
             catch
             {
@@ -441,7 +441,7 @@ namespace Butik_PGCJ
                         itemCart.Items.Remove(itemCart.SelectedItems[0]);
                     }
                 }
-                UpdateSum();
+                UpdateSum(CalculateDictionary());
             }
             catch
             {
@@ -463,27 +463,29 @@ namespace Butik_PGCJ
             }
         }
 
-        public static double UpdateSum()
+        public static double CalculateDiscountDictionary()
         {
-            sumLabel.Text = String.Empty;
             double sumTotal = 0;
-
-            if (discountGlobalValue > 0)
+            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
             {
-                foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
-                {
-                    sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - discountGlobalValue / 100);
-                }
+                sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - discountGlobalValue / 100);
             }
-            else
-            {
-                foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
-                {
-                    sumTotal += pair.Key.ItemPrice * pair.Value;
-                }
-            }
-            sumLabel.Text = sumTotal.ToString() + " kr";
             return sumTotal;
+        }
+
+        private double CalculateDictionary()
+        {
+            double sumTotal = 0;
+            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            {
+                sumTotal += pair.Key.ItemPrice * pair.Value;
+            }
+            return sumTotal;
+        }
+
+        private void UpdateSum(double sum)
+        {
+            sumLabel.Text = sum.ToString() + " kr";
         }
 
         private void checkoutButtonClicked(object sender, EventArgs e)
@@ -524,18 +526,23 @@ namespace Butik_PGCJ
                 Text = name,
             };
         }
-
     }
 
     class MyForm2 : Form
     {
         public MyForm2()
         {
+            // Icon for receipt
             Icon = new Icon(@"Pictures\guitar_icon.ico");
+
+            // Name of receipt
             Text = "PGCJ Gitarraffär - Tack för att du handlat hos oss.";
+
+            // Accessing global values
             Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
             double discountGlobalValue = MyForm.discountGlobalValue;
 
+            // Sets receipt-size
             ClientSize = new Size(400, 300);
 
             // Outline
@@ -558,6 +565,9 @@ namespace Butik_PGCJ
             outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
             for (int i = 0; i < 2; i++) { outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
+            // Calculation of total price in receipt
+            double sum = MyForm.CalculateDiscountDictionary();
+
             // Labels
             Label receipt = new Label()
             {
@@ -570,7 +580,7 @@ namespace Butik_PGCJ
             Label totalPriceLabel = new Label()
             {
                 Anchor = AnchorStyles.Right | AnchorStyles.Top,
-                Text = MyForm.UpdateSum().ToString() + " kr",
+                Text = sum.ToString() + " kr",
                 Font = new Font("Arial", 12, FontStyle.Bold),
             };
             outlineReceipt.Controls.Add(totalPriceLabel, 2, 4);
