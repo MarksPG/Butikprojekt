@@ -19,7 +19,7 @@ namespace Butik_PGCJ
 
         public static List<Guitar> ReadVendorFile()
         {
-            string[] lines = File.ReadAllLines("VendingSupply.csv");
+            string[] lines = File.ReadAllLines("Guitars.csv");
             List<Guitar> shopItems = new List<Guitar> { };
             foreach (string line in lines)
             {
@@ -35,6 +35,34 @@ namespace Butik_PGCJ
                 shopItems.Add(g);
             }
             return shopItems;
+        }
+    }
+
+    class Accessory
+    {
+        public string ItemName;
+        public int ItemPrice;
+        public string ItemPic;
+        public string ItemDescr;
+
+        public static List<Accessory> ReadVendorFile()
+        {
+            string[] lines = File.ReadAllLines("Accessories.csv");
+            List<Accessory> shopItemsAccessories = new List<Accessory> { };
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Accessory a = new Accessory
+                {
+                    ItemName = values[0],
+                    ItemPrice = int.Parse(values[1]),
+                    ItemPic = values[2],
+                    ItemDescr = values[3]
+                };
+                MyForm.itemList.Items.Add(a.ItemName);
+                shopItemsAccessories.Add(a);
+            }
+            return shopItemsAccessories;
         }
     }
 
@@ -60,10 +88,6 @@ namespace Butik_PGCJ
             return discountItem;
         }
     }
-
-    //class Store
-    //{
-    //}
 
     class MyForm : Form
     {
@@ -395,7 +419,7 @@ namespace Butik_PGCJ
                 Guitar g = shopItems[itemList.SelectedIndex];
                 itemDescriptionTextbox.Text = g.ItemDescr;
                 actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
-                itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
+                itemPicture.Image = Image.FromFile(@"Pictures\Guitars\" + g.ItemPic);
             }
         }
 
