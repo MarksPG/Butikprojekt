@@ -236,11 +236,11 @@ namespace Butik_PGCJ
 
             loadGuitars = CreateButton(AnchorStyles.None, "Visa gitarrer");
             outlineBelowShopItems.Controls.Add(loadGuitars, 0, 0);
-            saveCart.Click += saveAllItemsFromCart;
+            loadGuitars.Click += loadGuitarToItemListView;
 
             loadAccessories = CreateButton(AnchorStyles.None, "Visa tillbehör");
             outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
-            saveCart.Click += saveAllItemsFromCart;
+            loadAccessories.Click += loadAccessoryToItemListView;
 
 
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
@@ -329,6 +329,18 @@ namespace Butik_PGCJ
             outline.Controls.Add(itemPicture, 1, 1);
 
             shopItems = Guitar.ReadVendorFile();
+        }
+
+        private void loadGuitarToItemListView(object sender, EventArgs e)
+        {
+            itemList.Items.Clear();
+            Guitar.ReadVendorFile();
+        }
+
+        private void loadAccessoryToItemListView(object sender, EventArgs e)
+        {
+            itemList.Items.Clear();
+            Accessory.ReadVendorFile();
         }
 
         private void saveAllItemsFromCart(object sender, EventArgs e)
