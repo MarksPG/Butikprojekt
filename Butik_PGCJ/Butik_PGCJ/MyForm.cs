@@ -16,6 +16,7 @@ namespace Butik_PGCJ
         public int ItemPrice;
         public string ItemPic;
         public string ItemDescr;
+        public static List<Guitar> shopItems = new List<Guitar>();
 
         public static List<Guitar> ReadVendorFile()
         {
@@ -126,6 +127,8 @@ namespace Butik_PGCJ
         TableLayoutPanel outlineBelowShopItems = new TableLayoutPanel();
         TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
         TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
+        TableLayoutPanel outlineBackgroundImage = new TableLayoutPanel();
+        TableLayoutPanel outlineDiscountArea = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
         TextBox discountTextbox = new TextBox();
@@ -154,9 +157,20 @@ namespace Butik_PGCJ
             outlineBelowShopItems = CreateOutline(1, 2);
             outline.Controls.Add(outlineBelowShopItems, 0, 5);
 
+            outlineBackgroundImage = CreateOutline(1, 1);
+            outline.Controls.Add(outlineBackgroundImage, 0, 6);
+            outlineBackgroundImage.SetColumnSpan(outlineBackgroundImage, 3);
+            outlineBackgroundImage.SetRowSpan(outlineBackgroundImage, 2);
+            outlineBackgroundImage.BackgroundImage = new Bitmap(@"Pictures\bkgr-opacity.png");
+            outlineBackgroundImage.BackgroundImageLayout = ImageLayout.None;
+
             outlinePriceInformation = CreateOutline(1, 3);
             outline.Controls.Add(outlinePriceInformation, 1, 2);
             outline.SetColumnSpan(outlinePriceInformation, 2);
+
+            outlineDiscountArea = CreateOutline(2, 2);
+            outline.Controls.Add(outlineDiscountArea, 1, 5);
+            outlineDiscountArea.SetColumnSpan(outlineDiscountArea, 2);
 
             outlineSaveAndLoad = CreateOutline(1, 2);
             outline.Controls.Add(outlineSaveAndLoad, 3, 6);
@@ -171,6 +185,8 @@ namespace Butik_PGCJ
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+
+            for (int i = 0; i < 2; i++) { outlineBelowShopItems.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50)); }
 
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -190,8 +206,14 @@ namespace Butik_PGCJ
             actualPriceLabel = CreateLabel(AnchorStyles.Left, true, "");
             outlinePriceInformation.Controls.Add(actualPriceLabel, 1, 0);
 
-            discountLabel = CreateLabel(AnchorStyles.Top | AnchorStyles.Left, true, "");
-            outline.Controls.Add(discountLabel, 1, 6);
+            discountLabel = new Label
+            {
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                AutoSize = true,
+                Text = "",
+                Font = new Font("Arial", 8)
+            };
+            outlineDiscountArea.Controls.Add(discountLabel, 0, 1);
             outline.SetColumnSpan(discountLabel, 2);
 
             outlineBelowItemCart.Controls.Add(CreateLabel(AnchorStyles.Left, true, "Summa:"), 0, 0); // sumLabel
@@ -242,7 +264,6 @@ namespace Butik_PGCJ
             outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
             loadAccessories.Click += loadAccessoryToItemListView;
 
-
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
             outlineSaveAndLoad.Controls.Add(saveCart, 0, 0);
             saveCart.Click += saveAllItemsFromCart;
@@ -255,8 +276,8 @@ namespace Butik_PGCJ
             outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
             doCheckout.Click += checkoutButtonClicked;
 
-            addDiscount = CreateButton(AnchorStyles.None | AnchorStyles.Left, "Applicera rabatt");
-            outline.Controls.Add(addDiscount, 2, 5);
+            addDiscount = CreateButton(AnchorStyles.None, "Applicera rabatt");
+            outlineDiscountArea.Controls.Add(addDiscount, 1, 0);
             addDiscount.Click += discountButtonClicked;
 
             clearCart = new Button()
@@ -286,7 +307,7 @@ namespace Butik_PGCJ
                 Anchor = AnchorStyles.None,
                 Size = new Size(140, 0)
             };
-            outline.Controls.Add(discountTextbox, 1, 5);
+            outlineDiscountArea.Controls.Add(discountTextbox, 0, 0);
             discountTextbox.Click += discountTextBoxClicked;
             discountTextbox.KeyDown += discountTextBox_KeyDown;
 
