@@ -65,72 +65,75 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Pictures\Accessories\a_01.jpg">
+    <Content Include="Pictures\a_01.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_02.jpg">
+    <Content Include="Pictures\a_02.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_03.jpeg">
+    <Content Include="Pictures\a_03.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_04.jpeg">
+    <Content Include="Pictures\a_04.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_05.jpeg">
+    <Content Include="Pictures\a_05.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_06.jpeg">
+    <Content Include="Pictures\a_06.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_07.jpeg">
+    <Content Include="Pictures\a_07.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Accessories\a_08.jpeg">
+    <Content Include="Pictures\a_08.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Pictures\bkgr-opacity.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic01.jpeg">
+    <Content Include="Pictures\pic01.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic02.png">
+    <Content Include="Pictures\pic02.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic03.jpeg">
+    <Content Include="Pictures\pic03.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic04.png">
+    <Content Include="Pictures\pic04.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic05.jpeg">
+    <Content Include="Pictures\pic05.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic06.jpeg">
+    <Content Include="Pictures\pic06.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic07.png">
+    <Content Include="Pictures\pic07.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic08.jpeg">
+    <Content Include="Pictures\pic08.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic09.jpg">
+    <Content Include="Pictures\pic09.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic10.jpg">
+    <Content Include="Pictures\pic10.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic11.jpg">
+    <Content Include="Pictures\pic11.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Pictures\Guitars\pic12.jpg">
+    <Content Include="Pictures\pic12.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Pictures\guitar_icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Products.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

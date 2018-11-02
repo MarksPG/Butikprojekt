@@ -10,60 +10,43 @@ using System.Threading.Tasks;
 
 namespace Butik_PGCJ
 {
-    class Guitar
+    class Product
     {
+        public string Type;
         public string ItemName;
         public int ItemPrice;
         public string ItemPic;
         public string ItemDescr;
-        public static List<Guitar> shopItems = new List<Guitar>();
+        public static List<Product> shopItems = new List<Product>();
 
-        public static List<Guitar> ReadVendorFile()
+        public static List<Product> ReadVendorFile()
         {
-            string[] lines = File.ReadAllLines("Guitars.csv");
-            List<Guitar> shopItems = new List<Guitar> { };
+            string[] lines = File.ReadAllLines("Products.csv");
+            List<Product> shopItems = new List<Product> { };
             foreach (string line in lines)
             {
                 string[] values = line.Split(',');
-                Guitar g = new Guitar
+                Product p = new Product
                 {
-                    ItemName = values[0],
-                    ItemPrice = int.Parse(values[1]),
-                    ItemPic = values[2],
-                    ItemDescr = values[3]
+                    Type = values[0],
+                    ItemName = values[1],
+                    ItemPrice = int.Parse(values[2]),
+                    ItemPic = values[3],
+                    ItemDescr = values[4]
                 };
-                MyForm.itemList.Items.Add(g.ItemName);
-                shopItems.Add(g);
+                MyForm.listBoxItems.Items.Add(p.ItemName);
+                shopItems.Add(p);
             }
             return shopItems;
         }
-    }
 
-    class Accessory
-    {
-        public string ItemName;
-        public int ItemPrice;
-        public string ItemPic;
-        public string ItemDescr;
-
-        public static List<Accessory> ReadVendorFile()
+        public static void PopulateListBox(List<Product> tempShopList)
         {
-            string[] lines = File.ReadAllLines("Accessories.csv");
-            List<Accessory> shopItemsAccessories = new List<Accessory> { };
-            foreach (string line in lines)
+            MyForm.listBoxItems.Items.Clear();
+            foreach (Product p in tempShopList)
             {
-                string[] values = line.Split(',');
-                Accessory a = new Accessory
-                {
-                    ItemName = values[0],
-                    ItemPrice = int.Parse(values[1]),
-                    ItemPic = values[2],
-                    ItemDescr = values[3]
-                };
-                MyForm.itemList.Items.Add(a.ItemName);
-                shopItemsAccessories.Add(a);
+                MyForm.listBoxItems.Items.Add(p.ItemName);
             }
-            return shopItemsAccessories;
         }
     }
 
@@ -94,8 +77,11 @@ namespace Butik_PGCJ
     {
         // Global initializing
         public static double discountGlobalValue = 0;
-        public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
-        public static ListBox itemList;
+        public static Dictionary<Product, int> shoppingCart = new Dictionary<Product, int>();
+        public static ListBox listBoxItems;
+
+        // Static initializing
+        static Label sumLabel = new Label();
 
         // Non global initializing
         Button doCheckout = new Button();
@@ -112,9 +98,9 @@ namespace Butik_PGCJ
         Label itemCartLabel = new Label();
         Label actualPriceLabel = new Label();
         Label discountLabel = new Label();
-        static Label sumLabel = new Label();
-
-        List<Guitar> shopItems = new List<Guitar>();
+        
+        List<Product> shopItems = new List<Product>();
+        List<Product> tempShopList = new List<Product>();
 
         ListView itemCart = new ListView();
 
@@ -143,7 +129,7 @@ namespace Butik_PGCJ
 
             // Name of store
             Text = "PGCJ Gitarraffär - plocka dina strängar online";
-            
+
             // Background color of MyForm
             BackColor = SystemColors.InactiveBorder;
 
@@ -312,15 +298,15 @@ namespace Butik_PGCJ
             discountTextbox.KeyDown += discountTextBox_KeyDown;
 
             // Itemlist (products)
-            itemList = new ListBox()
+            listBoxItems = new ListBox()
             {
                 Anchor = AnchorStyles.Top,
                 Dock = DockStyle.Fill,
                 Font = new Font("Arial", 10)
             };
-            outline.Controls.Add(itemList);
-            outline.SetRowSpan(itemList, 4);
-            itemList.SelectedIndexChanged += ItemListBoxClicked;
+            outline.Controls.Add(listBoxItems);
+            outline.SetRowSpan(listBoxItems, 4);
+            listBoxItems.SelectedIndexChanged += ItemListBoxClicked;
 
             // ListView (cart)
             itemCart = new ListView()
@@ -349,19 +335,34 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
-            shopItems = Guitar.ReadVendorFile();
+            shopItems = Product.ReadVendorFile();
+            tempShopList = shopItems.ToList();
         }
 
         private void loadGuitarToItemListView(object sender, EventArgs e)
         {
-            itemList.Items.Clear();
-            Guitar.ReadVendorFile();
+            tempShopList.Clear();
+            foreach (Product p in shopItems)
+            {
+                if (p.Type == "gitarrer")
+                {
+                    tempShopList.Add(p);
+                }
+            }
+            Product.PopulateListBox(tempShopList);
         }
 
         private void loadAccessoryToItemListView(object sender, EventArgs e)
         {
-            itemList.Items.Clear();
-            Accessory.ReadVendorFile();
+            tempShopList.Clear();
+            foreach (Product p in shopItems)
+            {
+                if (p.Type == "tillbehör")
+                {
+                    tempShopList.Add(p);
+                }
+            }
+            Product.PopulateListBox(tempShopList);
         }
 
         private void saveAllItemsFromCart(object sender, EventArgs e)
@@ -383,22 +384,23 @@ namespace Butik_PGCJ
             foreach (string line in lines)
             {
                 string[] values = line.Split(',');
-                Guitar g = new Guitar
+                Product p = new Product
                 {
-                    ItemName = values[0],
-                    ItemPrice = int.Parse(values[1]),
-                    ItemPic = values[2],
-                    ItemDescr = values[3]
+                    Type = values[0],
+                    ItemName = values[1],
+                    ItemPrice = int.Parse(values[2]),
+                    ItemPic = values[3],
+                    ItemDescr = values[4]
                 };
 
-                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == g.ItemName);
-                if (shoppingCart.ContainsKey(g) || index.Key != null)
+                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
+                if (shoppingCart.ContainsKey(p) || index.Key != null)
                 {
                     shoppingCart[index.Key]++;
                 }
                 else
                 {
-                    shoppingCart.Add(g, 1);
+                    shoppingCart.Add(p, 1);
                 }
             }
             UpdateListView(shoppingCart);
@@ -423,7 +425,7 @@ namespace Butik_PGCJ
         {
             List<Discount> discountItem = Discount.ReadDiscountFile();
             string enteredCode = discountTextbox.Text;
-            
+
             if (discountItem.Any(d => d.DiscountName == enteredCode))
             {
                 int actualDiscount = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
@@ -443,16 +445,16 @@ namespace Butik_PGCJ
 
         private void ItemListBoxClicked(object sender, EventArgs e)
         {
-            if (itemList.SelectedIndex < 0)
+            if (listBoxItems.SelectedIndex < 0)
             {
                 return;
             }
             else
             {
-                Guitar g = shopItems[itemList.SelectedIndex];
-                itemDescriptionTextbox.Text = g.ItemDescr;
-                actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
-                itemPicture.Image = Image.FromFile(@"Pictures\Guitars\" + g.ItemPic);
+                Product p = tempShopList[listBoxItems.SelectedIndex];
+                itemDescriptionTextbox.Text = p.ItemDescr;
+                actualPriceLabel.Text = p.ItemPrice.ToString() + " kr";
+                itemPicture.Image = Image.FromFile(@"Pictures\" + p.ItemPic);
             }
         }
 
@@ -460,15 +462,15 @@ namespace Butik_PGCJ
         {
             try
             {
-                Guitar g = shopItems[itemList.SelectedIndex];
-                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == g.ItemName);
-                if (shoppingCart.ContainsKey(g) || index.Key != null)
+                Product p = tempShopList[listBoxItems.SelectedIndex];
+                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
+                if (shoppingCart.ContainsKey(p) || index.Key != null)
                 {
                     shoppingCart[index.Key]++;
                 }
                 else
                 {
-                    shoppingCart.Add(g, 1);
+                    shoppingCart.Add(p, 1);
                 }
                 UpdateListView(shoppingCart);
                 UpdateSum(CalculateDictionary());
@@ -506,11 +508,11 @@ namespace Butik_PGCJ
             }
         }
 
-        private void UpdateListView(Dictionary<Guitar, int> shoppingCart)
+        private void UpdateListView(Dictionary<Product, int> shoppingCart)
         {
             itemCart.Items.Clear();
 
-            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            foreach (KeyValuePair<Product, int> pair in shoppingCart)
             {
                 item = new ListViewItem(pair.Key.ItemName);
                 item.SubItems.Add(pair.Value.ToString());
@@ -523,7 +525,7 @@ namespace Butik_PGCJ
         public static double CalculateDiscountDictionary()
         {
             double sumTotal = 0;
-            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            foreach (KeyValuePair<Product, int> pair in shoppingCart)
             {
                 sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - discountGlobalValue / 100);
             }
@@ -533,7 +535,7 @@ namespace Butik_PGCJ
         private double CalculateDictionary()
         {
             double sumTotal = 0;
-            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            foreach (KeyValuePair<Product, int> pair in shoppingCart)
             {
                 sumTotal += pair.Key.ItemPrice * pair.Value;
             }
@@ -596,7 +598,7 @@ namespace Butik_PGCJ
             Text = "PGCJ Gitarraffär - Tack för att du handlat hos oss.";
 
             // Accessing global values
-            Dictionary<Guitar, int> shoppingCart = MyForm.shoppingCart;
+            Dictionary<Product, int> shoppingCart = MyForm.shoppingCart;
             double discountGlobalValue = MyForm.discountGlobalValue;
 
             // Sets receipt-size
@@ -694,7 +696,7 @@ namespace Butik_PGCJ
             });
 
             // Sums dictionary and displays at receipt
-            foreach (KeyValuePair<Guitar, int> pair in shoppingCart)
+            foreach (KeyValuePair<Product, int> pair in shoppingCart)
             {
                 dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice + " kr");
             }
