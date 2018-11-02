@@ -19,7 +19,7 @@ namespace Butik_PGCJ
 
         public static List<Guitar> ReadVendorFile()
         {
-            string[] lines = File.ReadAllLines("VendingSupply.csv");
+            string[] lines = File.ReadAllLines("Guitars.csv");
             List<Guitar> shopItems = new List<Guitar> { };
             foreach (string line in lines)
             {
@@ -35,6 +35,34 @@ namespace Butik_PGCJ
                 shopItems.Add(g);
             }
             return shopItems;
+        }
+    }
+
+    class Accessory
+    {
+        public string ItemName;
+        public int ItemPrice;
+        public string ItemPic;
+        public string ItemDescr;
+
+        public static List<Accessory> ReadVendorFile()
+        {
+            string[] lines = File.ReadAllLines("Accessories.csv");
+            List<Accessory> shopItemsAccessories = new List<Accessory> { };
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Accessory a = new Accessory
+                {
+                    ItemName = values[0],
+                    ItemPrice = int.Parse(values[1]),
+                    ItemPic = values[2],
+                    ItemDescr = values[3]
+                };
+                MyForm.itemList.Items.Add(a.ItemName);
+                shopItemsAccessories.Add(a);
+            }
+            return shopItemsAccessories;
         }
     }
 
@@ -60,10 +88,6 @@ namespace Butik_PGCJ
             return discountItem;
         }
     }
-
-    //class Store
-    //{
-    //}
 
     class MyForm : Form
     {
@@ -212,11 +236,11 @@ namespace Butik_PGCJ
 
             loadGuitars = CreateButton(AnchorStyles.None, "Visa gitarrer");
             outlineBelowShopItems.Controls.Add(loadGuitars, 0, 0);
-            saveCart.Click += saveAllItemsFromCart;
+            loadGuitars.Click += loadGuitarToItemListView;
 
             loadAccessories = CreateButton(AnchorStyles.None, "Visa tillbehör");
             outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
-            saveCart.Click += saveAllItemsFromCart;
+            loadAccessories.Click += loadAccessoryToItemListView;
 
 
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
@@ -307,6 +331,18 @@ namespace Butik_PGCJ
             shopItems = Guitar.ReadVendorFile();
         }
 
+        private void loadGuitarToItemListView(object sender, EventArgs e)
+        {
+            itemList.Items.Clear();
+            Guitar.ReadVendorFile();
+        }
+
+        private void loadAccessoryToItemListView(object sender, EventArgs e)
+        {
+            itemList.Items.Clear();
+            Accessory.ReadVendorFile();
+        }
+
         private void saveAllItemsFromCart(object sender, EventArgs e)
         {
             string path = @"C:\Windows\Temp\savedCart.txt";
@@ -395,7 +431,7 @@ namespace Butik_PGCJ
                 Guitar g = shopItems[itemList.SelectedIndex];
                 itemDescriptionTextbox.Text = g.ItemDescr;
                 actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
-                itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
+                itemPicture.Image = Image.FromFile(@"Pictures\Guitars\" + g.ItemPic);
             }
         }
 
