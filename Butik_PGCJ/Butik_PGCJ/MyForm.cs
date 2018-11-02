@@ -16,11 +16,19 @@ namespace Butik_PGCJ
         public int ItemPrice;
         public string ItemPic;
         public string ItemDescr;
+        public static List<Guitar> shopItems = new List<Guitar>();
 
-        public static List<Guitar> ReadVendorFile()
+        //inläsning från csv till lista
+        //bilder
+        //en ny dictionary där accessories lagras
+        //koppla markering av accessory-produkt till rätt metoder
+        //koppla att vald vara läggs till i dictionary
+        //summering av båda dictionarys, med och utan discount
+
+        public static void ReadVendorFile()
         {
             string[] lines = File.ReadAllLines("VendingSupply.csv");
-            List<Guitar> shopItems = new List<Guitar> { };
+            shopItems = new List<Guitar> { };
             foreach (string line in lines)
             {
                 string[] values = line.Split(',');
@@ -34,8 +42,12 @@ namespace Butik_PGCJ
                 MyForm.itemList.Items.Add(g.ItemName);
                 shopItems.Add(g);
             }
-            return shopItems;
         }
+    }
+
+    class Accessories : Guitar
+    {
+        
     }
 
     class Discount
@@ -61,16 +73,15 @@ namespace Butik_PGCJ
         }
     }
 
-    //class Store
-    //{
-    //}
-
     class MyForm : Form
     {
         // Global initializing
         public static double discountGlobalValue = 0;
         public static Dictionary<Guitar, int> shoppingCart = new Dictionary<Guitar, int>();
         public static ListBox itemList;
+
+        // Static initializing
+        static Label sumLabel = new Label();
 
         // Non global initializing
         Button doCheckout = new Button();
@@ -87,9 +98,6 @@ namespace Butik_PGCJ
         Label itemCartLabel = new Label();
         Label actualPriceLabel = new Label();
         Label discountLabel = new Label();
-        static Label sumLabel = new Label();
-
-        List<Guitar> shopItems = new List<Guitar>();
 
         ListView itemCart = new ListView();
 
@@ -100,7 +108,9 @@ namespace Butik_PGCJ
         TableLayoutPanel outline = new TableLayoutPanel();
         TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
         TableLayoutPanel outlineBelowShopItems = new TableLayoutPanel();
+        TableLayoutPanel outlineBackgroundImage = new TableLayoutPanel();
         TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
+        TableLayoutPanel outlineDiscountArea = new TableLayoutPanel();
         TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
 
         TextBox itemDescriptionTextbox = new TextBox();
@@ -130,9 +140,20 @@ namespace Butik_PGCJ
             outlineBelowShopItems = CreateOutline(1, 2);
             outline.Controls.Add(outlineBelowShopItems, 0, 5);
 
+            outlineBackgroundImage = CreateOutline(1, 1);
+            outline.Controls.Add(outlineBackgroundImage, 0, 6);
+            outlineBackgroundImage.SetColumnSpan(outlineBackgroundImage, 3);
+            outlineBackgroundImage.SetRowSpan(outlineBackgroundImage, 2);
+            outlineBackgroundImage.BackgroundImage = new Bitmap(@"Pictures\bkgr-opacity.png");
+            outlineBackgroundImage.BackgroundImageLayout = ImageLayout.None;
+
             outlinePriceInformation = CreateOutline(1, 3);
             outline.Controls.Add(outlinePriceInformation, 1, 2);
             outline.SetColumnSpan(outlinePriceInformation, 2);
+
+            outlineDiscountArea = CreateOutline(2, 2);
+            outline.Controls.Add(outlineDiscountArea, 1, 5);
+            outlineDiscountArea.SetColumnSpan(outlineDiscountArea, 2);
 
             outlineSaveAndLoad = CreateOutline(1, 2);
             outline.Controls.Add(outlineSaveAndLoad, 3, 6);
@@ -147,6 +168,8 @@ namespace Butik_PGCJ
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 20));
             outline.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30));
+
+            for (int i = 0; i < 2; i++) { outlineBelowShopItems.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50)); }
 
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 80));
             outlineBelowItemCart.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -166,9 +189,16 @@ namespace Butik_PGCJ
             actualPriceLabel = CreateLabel(AnchorStyles.Left, true, "");
             outlinePriceInformation.Controls.Add(actualPriceLabel, 1, 0);
 
-            discountLabel = CreateLabel(AnchorStyles.Top | AnchorStyles.Left, true, "");
-            outline.Controls.Add(discountLabel, 1, 6);
+            discountLabel = new Label
+            {
+                Anchor = AnchorStyles.Top | AnchorStyles.Left,
+                AutoSize = true,
+                Text = "",
+                Font = new Font("Arial", 8)
+            };
+            outlineDiscountArea.Controls.Add(discountLabel, 0, 1);
             outline.SetColumnSpan(discountLabel, 2);
+            //discountLabel = CreateLabel(AnchorStyles.Top | AnchorStyles.Left, true, "");
 
             outlineBelowItemCart.Controls.Add(CreateLabel(AnchorStyles.Left, true, "Summa:"), 0, 0); // sumLabel
 
@@ -218,7 +248,6 @@ namespace Butik_PGCJ
             outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
             saveCart.Click += saveAllItemsFromCart;
 
-
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
             outlineSaveAndLoad.Controls.Add(saveCart, 0, 0);
             saveCart.Click += saveAllItemsFromCart;
@@ -231,8 +260,8 @@ namespace Butik_PGCJ
             outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
             doCheckout.Click += checkoutButtonClicked;
 
-            addDiscount = CreateButton(AnchorStyles.None | AnchorStyles.Left, "Applicera rabatt");
-            outline.Controls.Add(addDiscount, 2, 5);
+            addDiscount = CreateButton(AnchorStyles.None, "Applicera rabatt");
+            outlineDiscountArea.Controls.Add(addDiscount, 1, 0);
             addDiscount.Click += discountButtonClicked;
 
             clearCart = new Button()
@@ -262,7 +291,7 @@ namespace Butik_PGCJ
                 Anchor = AnchorStyles.None,
                 Size = new Size(140, 0)
             };
-            outline.Controls.Add(discountTextbox, 1, 5);
+            outlineDiscountArea.Controls.Add(discountTextbox, 0, 0);
             discountTextbox.Click += discountTextBoxClicked;
             discountTextbox.KeyDown += discountTextBox_KeyDown;
 
@@ -304,7 +333,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
-            shopItems = Guitar.ReadVendorFile();
+            Guitar.ReadVendorFile();
         }
 
         private void saveAllItemsFromCart(object sender, EventArgs e)
@@ -386,13 +415,14 @@ namespace Butik_PGCJ
 
         private void ItemListBoxClicked(object sender, EventArgs e)
         {
+            
             if (itemList.SelectedIndex < 0)
             {
                 return;
             }
             else
             {
-                Guitar g = shopItems[itemList.SelectedIndex];
+                Guitar g = Guitar.shopItems[itemList.SelectedIndex];
                 itemDescriptionTextbox.Text = g.ItemDescr;
                 actualPriceLabel.Text = g.ItemPrice.ToString() + " kr";
                 itemPicture.Image = Image.FromFile(@"Pictures\" + g.ItemPic);
@@ -403,7 +433,7 @@ namespace Butik_PGCJ
         {
             try
             {
-                Guitar g = shopItems[itemList.SelectedIndex];
+                Guitar g = Guitar.shopItems[itemList.SelectedIndex];
                 var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == g.ItemName);
                 if (shoppingCart.ContainsKey(g) || index.Key != null)
                 {
@@ -496,7 +526,7 @@ namespace Butik_PGCJ
             myForm.Show();
         }
 
-        private static TableLayoutPanel CreateOutline(int row, int column)
+        private TableLayoutPanel CreateOutline(int row, int column)
         {
             return new TableLayoutPanel
             {
@@ -506,7 +536,7 @@ namespace Butik_PGCJ
             };
         }
 
-        private static Label CreateLabel(AnchorStyles anchor, bool value, string name)
+        private Label CreateLabel(AnchorStyles anchor, bool value, string name)
         {
             return new Label
             {
@@ -517,7 +547,7 @@ namespace Butik_PGCJ
             };
         }
 
-        private static Button CreateButton(AnchorStyles anchor, string name)
+        private Button CreateButton(AnchorStyles anchor, string name)
         {
             return new Button
             {
@@ -643,7 +673,7 @@ namespace Butik_PGCJ
             }
         }
 
-        private static Label CreateLabel(AnchorStyles anchor, string name)
+        private Label CreateLabel(AnchorStyles anchor, string name)
         {
             return new Label
             {
