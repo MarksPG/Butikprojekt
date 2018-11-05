@@ -17,6 +17,7 @@ namespace Butik_PGCJ
         public int ItemPrice;
         public string ItemPic;
         public string ItemDescr;
+        public int KeyValue;
         public static List<Product> shopItems = new List<Product>();
 
         public static List<Product> ReadVendorFile()
@@ -383,7 +384,7 @@ namespace Butik_PGCJ
         private void saveAllItemsFromCart(object sender, EventArgs e)
         {
             string path = @"C:\Windows\Temp\savedCart.txt";
-            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}, {5}", kvp.Key.Type, kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4},{5}", kvp.Key.Type, kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
         }
 
         private void removeAllItemsFromCart(object sender, EventArgs e)
@@ -405,17 +406,18 @@ namespace Butik_PGCJ
                     ItemName = values[1],
                     ItemPrice = int.Parse(values[2]),
                     ItemPic = values[3],
-                    ItemDescr = values[4]
+                    ItemDescr = values[4],
+                    KeyValue = int.Parse(values[5])
                 };
 
                 var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
                 if (shoppingCart.ContainsKey(p) || index.Key != null)
                 {
-                    shoppingCart[index.Key]++;
+                    shoppingCart[index.Key] += p.KeyValue;
                 }
                 else
                 {
-                    shoppingCart.Add(p, 1);
+                    shoppingCart.Add(p, p.KeyValue);
                 }
             }
             UpdateListView(shoppingCart);
