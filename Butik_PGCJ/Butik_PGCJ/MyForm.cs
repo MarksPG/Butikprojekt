@@ -55,6 +55,8 @@ namespace Butik_PGCJ
         public string DiscountName;
         public int DiscountValue;
 
+
+
         public static List<Discount> ReadDiscountFile()
         {
             string[] lines = File.ReadAllLines("Discounts.csv");
@@ -67,9 +69,22 @@ namespace Butik_PGCJ
                     DiscountName = values[0],
                     DiscountValue = int.Parse(values[1])
                 };
-                discountItem.Add(d);
+                if (int.Parse(values[1]) > 50)
+                {
+                    throw new InvalidOperationException("Rabattsatsen överstiger högsta tillåtna. Kontrollera CSV-filen.");
+                }
+                else
+                {
+                    discountItem.Add(d);
+                }
             }
             return discountItem;
+        }
+
+        public static double CalculateDifference()
+        {
+            double sumDifference = MyForm.CalculateDictionary() - MyForm.CalculateDiscountDictionary();
+            return sumDifference;
         }
     }
 
@@ -98,7 +113,7 @@ namespace Butik_PGCJ
         Label itemCartLabel = new Label();
         Label actualPriceLabel = new Label();
         Label discountLabel = new Label();
-        
+
         List<Product> shopItems = new List<Product>();
         List<Product> tempShopList = new List<Product>();
 
@@ -122,7 +137,7 @@ namespace Butik_PGCJ
         public MyForm()
         {
             // Sets clientsize
-            ClientSize = new Size(780, 550);
+            ClientSize = new Size(840, 570);
 
             // Icon for store
             Icon = new Icon(@"Pictures\guitar_icon.ico");
@@ -368,7 +383,7 @@ namespace Butik_PGCJ
         private void saveAllItemsFromCart(object sender, EventArgs e)
         {
             string path = @"C:\Windows\Temp\savedCart.txt";
-            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}", kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4}, {5}", kvp.Key.Type, kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
         }
 
         private void removeAllItemsFromCart(object sender, EventArgs e)
@@ -532,7 +547,7 @@ namespace Butik_PGCJ
             return sumTotal;
         }
 
-        private double CalculateDictionary()
+        public static double CalculateDictionary()
         {
             double sumTotal = 0;
             foreach (KeyValuePair<Product, int> pair in shoppingCart)
@@ -600,6 +615,7 @@ namespace Butik_PGCJ
             // Accessing global values
             Dictionary<Product, int> shoppingCart = MyForm.shoppingCart;
             double discountGlobalValue = MyForm.discountGlobalValue;
+            double sumDifference = Discount.CalculateDifference();
 
             // Sets receipt-size
             ClientSize = new Size(400, 300);
@@ -642,11 +658,32 @@ namespace Butik_PGCJ
                 Text = sum.ToString() + " kr",
                 Font = new Font("Arial", 12, FontStyle.Bold),
             };
-            outlineReceipt.Controls.Add(totalPriceLabel, 2, 4);
+            outlineReceipt.Controls.Add(totalPriceLabel, 2, 5);
+
+            Label sumDifferenceLabelText = new Label()
+            {
+                Anchor = AnchorStyles.Right | AnchorStyles.Top,
+                Text = "Rabattkoden du angav har sparat dig:",
+                Font = new Font("Arial", 10),
+                ForeColor = Color.Red,
+                AutoSize = true
+            };
+            outlineReceipt.Controls.Add(sumDifferenceLabelText, 0, 4);
+            outlineReceipt.SetColumnSpan(sumDifferenceLabelText, 2);
+
+            Label sumDifferencePriceLabel = new Label()
+            {
+                Anchor = AnchorStyles.Left | AnchorStyles.Top,
+                Text = sumDifference.ToString() + "kr",
+                Font = new Font("Arial", 10),
+                ForeColor = Color.Red,
+                AutoSize = true
+            };
+            outlineReceipt.Controls.Add(sumDifferencePriceLabel, 2, 4);
 
             outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "Artikel"), 0, 2); // itemName
             outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "Antal"), 1, 2); // quantity
-            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Right | AnchorStyles.Top, "Totalpris:"), 1, 4); // totalPriceLabelText
+            outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Right | AnchorStyles.Top, "Totalpris:"), 1, 5); // totalPriceLabelText
             outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "á-Pris"), 2, 2); // pricePrice
 
             // DataGridView
