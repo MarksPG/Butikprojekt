@@ -68,8 +68,6 @@ namespace Butik_PGCJ
         public string DiscountName;
         public int DiscountValue;
 
-
-
         public static List<Discount> ReadDiscountFile()
         {
             string[] lines = File.ReadAllLines("Discounts.csv");
@@ -94,63 +92,167 @@ namespace Butik_PGCJ
             return discountItem;
         }
 
-        public static double CalculateDifference()
+        public static double CalculateDiscountDictionary(Dictionary<Product, int> shoppingBasket)
         {
-            double sumDifference = MyForm.CalculateDictionary() - MyForm.CalculateDiscountDictionary();
-            return sumDifference;
+            double sumTotal = 0;
+            foreach (KeyValuePair<Product, int> pair in shoppingBasket)
+            {
+                sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - MyForm.discountGlobalValue / 100);
+            }
+            return sumTotal;
         }
     }
 
     class ShoppingCart
     {
+        private Dictionary<Product, int> shoppingBasket = new Dictionary<Product, int>();
 
+        public Dictionary<Product, int> ShoppingBasket
+        {
+            get
+            {
+                return shoppingBasket;
+            }
+            set
+            {
+                shoppingBasket = value;
+            }
+        }
+
+        public void SaveCart()
+        {
+            string path = @"C:\Windows\Temp\savedCart.txt";
+            File.WriteAllLines(path, shoppingBasket.Select(kvp => string.Format("{0},{1},{2},{3},{4},{5}", kvp.Key.Type, kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+        }
+
+        public void LoadCart()
+        {
+            string[] lines = File.ReadAllLines(@"C:\Windows\Temp\savedCart.txt");
+            foreach (string line in lines)
+            {
+                string[] values = line.Split(',');
+                Product p = new Product
+                {
+                    Type = values[0],
+                    ItemName = values[1],
+                    ItemPrice = int.Parse(values[2]),
+                    ItemPic = values[3],
+                    ItemDescr = values[4],
+                    KeyValue = int.Parse(values[5])
+                };
+
+                var index = shoppingBasket.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
+                if (shoppingBasket.ContainsKey(p) || index.Key != null)
+                {
+                    shoppingBasket[index.Key] += p.KeyValue;
+                }
+                else
+                {
+                    shoppingBasket.Add(p, p.KeyValue);
+                }
+            }
+        }
+
+        public void AddToBasket(Product p)
+        {
+            var index = shoppingBasket.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
+            if (shoppingBasket.ContainsKey(p) || index.Key != null)
+            {
+                shoppingBasket[index.Key]++;
+            }
+            else
+            {
+                shoppingBasket.Add(p, 1);
+            }
+        }
+
+        public void RemoveFromBasket(ListView itemCart)
+        {
+            string itemCheckTag = itemCart.SelectedItems[0].Tag.ToString();
+            var itemToRemove = shoppingBasket.Where(i => i.Key.ItemName == itemCheckTag).ToArray();
+            foreach (var i in itemToRemove)
+            {
+                if (i.Value > 1)
+                {
+                    shoppingBasket[i.Key] = i.Value - 1;
+                    UpdateListView(itemCart);
+                }
+                else
+                {
+                    shoppingBasket.Remove(i.Key);
+                    itemCart.Items.Remove(itemCart.SelectedItems[0]);
+                }
+            }
+        }
+
+        public void UpdateListView(ListView itemCart)
+        {
+            itemCart.Items.Clear();
+
+            foreach (KeyValuePair<Product, int> pair in shoppingBasket)
+            {
+                ListViewItem item = new ListViewItem(pair.Key.ItemName);
+                item.SubItems.Add(pair.Value.ToString());
+                item.SubItems.Add(pair.Key.ItemPrice.ToString());
+                item.Tag = pair.Key.ItemName;
+                itemCart.Items.Add(item);
+            }
+        }
+
+        public double CalculateDictionary()
+        {
+            double sumTotal = 0;
+            foreach (KeyValuePair<Product, int> pair in shoppingBasket)
+            {
+                sumTotal += pair.Key.ItemPrice * pair.Value;
+            }
+            return sumTotal;
+        }
     }
 
     class MyForm : Form
     {
         // Global initializing
         public static double discountGlobalValue = 0;
-        public static Dictionary<Product, int> shoppingCart = new Dictionary<Product, int>();
         public static ListBox listBoxItems;
 
         // Static initializing
-        static Label sumLabel = new Label();
+        static Label sumLabel;
+        public static ShoppingCart s = new ShoppingCart();
 
         // Non global initializing
-        Button doCheckout = new Button();
-        Button addItemToCart = new Button();
-        Button removeItemFromCart = new Button();
-        Button addDiscount = new Button();
-        Button saveCart = new Button();
-        Button loadCart = new Button();
-        Button clearCart = new Button();
-        Button loadGuitars = new Button();
-        Button loadAccessories = new Button();
+        Button doCheckout;
+        Button addItemToCart;
+        Button removeItemFromCart;
+        Button addDiscount;
+        Button saveCart;
+        Button loadCart;
+        Button clearCart;
+        Button loadGuitars;
+        Button loadAccessories;
 
-        Label itemDescriptionLabel = new Label();
-        Label itemCartLabel = new Label();
-        Label actualPriceLabel = new Label();
-        Label discountLabel = new Label();
+        Label itemDescriptionLabel;
+        Label itemCartLabel;
+        Label actualPriceLabel;
+        Label discountLabel;
 
         List<Product> shopItems = new List<Product>();
         List<Product> tempShopList = new List<Product>();
 
-        ListView itemCart = new ListView();
-
-        ListViewItem item;
+        ListView itemCart;
 
         PictureBox itemPicture = new PictureBox();
 
-        TableLayoutPanel outline = new TableLayoutPanel();
-        TableLayoutPanel outlineBelowItemCart = new TableLayoutPanel();
-        TableLayoutPanel outlineBelowShopItems = new TableLayoutPanel();
-        TableLayoutPanel outlinePriceInformation = new TableLayoutPanel();
-        TableLayoutPanel outlineSaveAndLoad = new TableLayoutPanel();
-        TableLayoutPanel outlineBackgroundImage = new TableLayoutPanel();
-        TableLayoutPanel outlineDiscountArea = new TableLayoutPanel();
+        TableLayoutPanel outline;
+        TableLayoutPanel outlineBelowItemCart;
+        TableLayoutPanel outlineBelowShopItems;
+        TableLayoutPanel outlinePriceInformation;
+        TableLayoutPanel outlineSaveAndLoad;
+        TableLayoutPanel outlineBackgroundImage;
+        TableLayoutPanel outlineDiscountArea;
 
-        TextBox itemDescriptionTextbox = new TextBox();
-        TextBox discountTextbox = new TextBox();
+        TextBox itemDescriptionTextbox;
+        TextBox discountTextbox;
 
         public MyForm()
         {
@@ -277,27 +379,27 @@ namespace Butik_PGCJ
 
             loadGuitars = CreateButton(AnchorStyles.None, "Visa gitarrer");
             outlineBelowShopItems.Controls.Add(loadGuitars, 0, 0);
-            loadGuitars.Click += loadGuitarToItemListView;
+            loadGuitars.Click += LoadGuitarToItemListView;
 
             loadAccessories = CreateButton(AnchorStyles.None, "Visa tillbehör");
             outlineBelowShopItems.Controls.Add(loadAccessories, 1, 0);
-            loadAccessories.Click += loadAccessoryToItemListView;
+            loadAccessories.Click += LoadAccessoryToItemListView;
 
             saveCart = CreateButton(AnchorStyles.None, "Spara varukorg");
             outlineSaveAndLoad.Controls.Add(saveCart, 0, 0);
-            saveCart.Click += saveAllItemsFromCart;
+            saveCart.Click += SaveAllItemsFromCart;
 
             loadCart = CreateButton(AnchorStyles.None, "Ladda varukorg");
             outlineSaveAndLoad.Controls.Add(loadCart, 1, 0);
-            loadCart.Click += loadSavedCart;
+            loadCart.Click += LoadSavedCart;
 
             doCheckout = CreateButton(AnchorStyles.None, "Checkout");
             outlineBelowItemCart.Controls.Add(doCheckout, 2, 0);
-            doCheckout.Click += checkoutButtonClicked;
+            doCheckout.Click += CheckoutButtonClicked;
 
             addDiscount = CreateButton(AnchorStyles.None, "Applicera rabatt");
             outlineDiscountArea.Controls.Add(addDiscount, 1, 0);
-            addDiscount.Click += discountButtonClicked;
+            addDiscount.Click += DiscountButtonClicked;
 
             clearCart = new Button()
             {
@@ -307,7 +409,7 @@ namespace Butik_PGCJ
                 Dock = DockStyle.Fill
             };
             outline.Controls.Add(clearCart, 3, 7);
-            clearCart.Click += removeAllItemsFromCart;
+            clearCart.Click += RemoveAllItemsFromCart;
 
             // Textbox
             itemDescriptionTextbox = new TextBox()
@@ -327,10 +429,10 @@ namespace Butik_PGCJ
                 Size = new Size(140, 0)
             };
             outlineDiscountArea.Controls.Add(discountTextbox, 0, 0);
-            discountTextbox.Click += discountTextBoxClicked;
-            discountTextbox.KeyDown += discountTextBox_KeyDown;
+            discountTextbox.Click += DiscountTextBoxClicked;
+            discountTextbox.KeyDown += DiscountTextBox_KeyDown;
 
-            // Itemlist (products)
+            // ListBoxItems (products)
             listBoxItems = new ListBox()
             {
                 Anchor = AnchorStyles.Top,
@@ -372,7 +474,7 @@ namespace Butik_PGCJ
             tempShopList = shopItems.ToList();
         }
 
-        private void loadGuitarToItemListView(object sender, EventArgs e)
+        private void LoadGuitarToItemListView(object sender, EventArgs e)
         {
             tempShopList.Clear();
             foreach (Product p in shopItems)
@@ -385,7 +487,7 @@ namespace Butik_PGCJ
             Product.PopulateListBox(tempShopList);
         }
 
-        private void loadAccessoryToItemListView(object sender, EventArgs e)
+        private void LoadAccessoryToItemListView(object sender, EventArgs e)
         {
             tempShopList.Clear();
             foreach (Product p in shopItems)
@@ -398,64 +500,40 @@ namespace Butik_PGCJ
             Product.PopulateListBox(tempShopList);
         }
 
-        private void saveAllItemsFromCart(object sender, EventArgs e)
+        private void SaveAllItemsFromCart(object sender, EventArgs e)
         {
-            string path = @"C:\Windows\Temp\savedCart.txt";
-            File.WriteAllLines(path, shoppingCart.Select(kvp => string.Format("{0},{1},{2},{3},{4},{5}", kvp.Key.Type, kvp.Key.ItemName, kvp.Key.ItemPrice, kvp.Key.ItemPic, kvp.Key.ItemDescr, kvp.Value)));
+            s.SaveCart();
         }
 
-        private void removeAllItemsFromCart(object sender, EventArgs e)
+        public void LoadSavedCart(object sender, EventArgs e)
         {
-            itemCart.Items.Clear();
-            shoppingCart.Clear();
-            sumLabel.Text = "";
-        }
-
-        public void loadSavedCart(object sender, EventArgs e)
-        {
-            string[] lines = File.ReadAllLines(@"C:\Windows\Temp\savedCart.txt");
-            foreach (string line in lines)
-            {
-                string[] values = line.Split(',');
-                Product p = new Product
-                {
-                    Type = values[0],
-                    ItemName = values[1],
-                    ItemPrice = int.Parse(values[2]),
-                    ItemPic = values[3],
-                    ItemDescr = values[4],
-                    KeyValue = int.Parse(values[5])
-                };
-
-                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
-                if (shoppingCart.ContainsKey(p) || index.Key != null)
-                {
-                    shoppingCart[index.Key] += p.KeyValue;
-                }
-                else
-                {
-                    shoppingCart.Add(p, p.KeyValue);
-                }
-            }
-            UpdateListView(shoppingCart);
-            UpdateSum(CalculateDictionary());
+            s.LoadCart();
+            s.UpdateListView(itemCart);
+            UpdateSum(s.CalculateDictionary());
             loadCart.Enabled = false;
         }
 
-        private void discountTextBoxClicked(object sender, EventArgs e)
+        private void RemoveAllItemsFromCart(object sender, EventArgs e)
+        {
+            itemCart.Items.Clear();
+            s.ShoppingBasket.Clear();
+            sumLabel.Text = "";
+        }
+
+        private void DiscountTextBoxClicked(object sender, EventArgs e)
         {
             discountTextbox.Text = string.Empty;
         }
 
-        private void discountTextBox_KeyDown(object sender, KeyEventArgs e)
+        private void DiscountTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                discountButtonClicked(this, new EventArgs());
+                DiscountButtonClicked(this, new EventArgs());
             }
         }
 
-        private void discountButtonClicked(object sender, EventArgs e)
+        private void DiscountButtonClicked(object sender, EventArgs e)
         {
             List<Discount> discountItem = Discount.ReadDiscountFile();
             string enteredCode = discountTextbox.Text;
@@ -473,7 +551,7 @@ namespace Butik_PGCJ
             {
                 discountLabel.Text = "Tyvärr, koden är inte giltig!";
             }
-            UpdateSum(CalculateDiscountDictionary());
+            UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
         }
 
         private void ItemListBoxClicked(object sender, EventArgs e)
@@ -496,17 +574,9 @@ namespace Butik_PGCJ
             try
             {
                 Product p = tempShopList[listBoxItems.SelectedIndex];
-                var index = shoppingCart.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
-                if (shoppingCart.ContainsKey(p) || index.Key != null)
-                {
-                    shoppingCart[index.Key]++;
-                }
-                else
-                {
-                    shoppingCart.Add(p, 1);
-                }
-                UpdateListView(shoppingCart);
-                UpdateSum(CalculateDictionary());
+                s.AddToBasket(p);
+                s.UpdateListView(itemCart);
+                UpdateSum(s.CalculateDictionary());
             }
             catch
             {
@@ -518,22 +588,8 @@ namespace Butik_PGCJ
         {
             try
             {
-                string itemCheckTag = itemCart.SelectedItems[0].Tag.ToString();
-                var itemToRemove = shoppingCart.Where(i => i.Key.ItemName == itemCheckTag).ToArray();
-                foreach (var item in itemToRemove)
-                {
-                    if (item.Value > 1)
-                    {
-                        shoppingCart[item.Key] = item.Value - 1;
-                        UpdateListView(shoppingCart);
-                    }
-                    else
-                    {
-                        shoppingCart.Remove(item.Key);
-                        itemCart.Items.Remove(itemCart.SelectedItems[0]);
-                    }
-                }
-                UpdateSum(CalculateDictionary());
+                s.RemoveFromBasket(itemCart);
+                UpdateSum(s.CalculateDictionary());
             }
             catch
             {
@@ -541,46 +597,12 @@ namespace Butik_PGCJ
             }
         }
 
-        private void UpdateListView(Dictionary<Product, int> shoppingCart)
-        {
-            itemCart.Items.Clear();
-
-            foreach (KeyValuePair<Product, int> pair in shoppingCart)
-            {
-                item = new ListViewItem(pair.Key.ItemName);
-                item.SubItems.Add(pair.Value.ToString());
-                item.SubItems.Add(pair.Key.ItemPrice.ToString());
-                item.Tag = pair.Key.ItemName;
-                itemCart.Items.Add(item);
-            }
-        }
-
-        public static double CalculateDiscountDictionary()
-        {
-            double sumTotal = 0;
-            foreach (KeyValuePair<Product, int> pair in shoppingCart)
-            {
-                sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - discountGlobalValue / 100);
-            }
-            return sumTotal;
-        }
-
-        public static double CalculateDictionary()
-        {
-            double sumTotal = 0;
-            foreach (KeyValuePair<Product, int> pair in shoppingCart)
-            {
-                sumTotal += pair.Key.ItemPrice * pair.Value;
-            }
-            return sumTotal;
-        }
-
         private void UpdateSum(double sum)
         {
             sumLabel.Text = sum.ToString() + " kr";
         }
 
-        private void checkoutButtonClicked(object sender, EventArgs e)
+        private void CheckoutButtonClicked(object sender, EventArgs e)
         {
             var myForm = new MyForm2();
             myForm.StartPosition = FormStartPosition.CenterScreen;
@@ -630,11 +652,6 @@ namespace Butik_PGCJ
             // Name of receipt
             Text = "PGCJ Gitarraffär - Tack för att du handlat hos oss.";
 
-            // Accessing global values
-            Dictionary<Product, int> shoppingCart = MyForm.shoppingCart;
-            double discountGlobalValue = MyForm.discountGlobalValue;
-            double sumDifference = Discount.CalculateDifference();
-
             // Sets receipt-size
             ClientSize = new Size(400, 300);
 
@@ -658,8 +675,9 @@ namespace Butik_PGCJ
             outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
             for (int i = 0; i < 2; i++) { outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
-            // Calculation of total price in receipt
-            double sum = MyForm.CalculateDiscountDictionary();
+            // Calculate discount on Dictionary
+            double sumTotal = Discount.CalculateDiscountDictionary(MyForm.s.ShoppingBasket);
+            double sumDifference = MyForm.s.CalculateDictionary() - sumTotal;
 
             // Labels
             Label receipt = new Label()
@@ -673,7 +691,7 @@ namespace Butik_PGCJ
             Label totalPriceLabel = new Label()
             {
                 Anchor = AnchorStyles.Right | AnchorStyles.Top,
-                Text = sum.ToString() + " kr",
+                Text =  sumTotal + " kr",
                 Font = new Font("Arial", 12, FontStyle.Bold),
             };
             outlineReceipt.Controls.Add(totalPriceLabel, 2, 5);
@@ -689,10 +707,11 @@ namespace Butik_PGCJ
             outlineReceipt.Controls.Add(sumDifferenceLabelText, 0, 4);
             outlineReceipt.SetColumnSpan(sumDifferenceLabelText, 2);
 
+
             Label sumDifferencePriceLabel = new Label()
             {
                 Anchor = AnchorStyles.Left | AnchorStyles.Top,
-                Text = sumDifference.ToString() + "kr",
+                Text = sumDifference + "kr",
                 Font = new Font("Arial", 10),
                 ForeColor = Color.Red,
                 AutoSize = true
@@ -751,7 +770,7 @@ namespace Butik_PGCJ
             });
 
             // Sums dictionary and displays at receipt
-            foreach (KeyValuePair<Product, int> pair in shoppingCart)
+            foreach (KeyValuePair<Product, int> pair in MyForm.s.ShoppingBasket)
             {
                 dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice + " kr");
             }
