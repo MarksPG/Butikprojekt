@@ -14,11 +14,23 @@ namespace Butik_PGCJ
     {
         public string Type;
         public string ItemName;
-        public int ItemPrice;
+        private int itemPrice;
         public string ItemPic;
         public string ItemDescr;
         public int KeyValue;
         public static List<Product> shopItems = new List<Product>();
+
+        public int ItemPrice
+        {
+            get
+            {
+                return itemPrice;
+            }
+            set
+            {
+                itemPrice = value;
+            }
+        }
 
         public static List<Product> ReadVendorFile()
         {
@@ -31,7 +43,7 @@ namespace Butik_PGCJ
                 {
                     Type = values[0],
                     ItemName = values[1],
-                    ItemPrice = int.Parse(values[2]),
+                    itemPrice = int.Parse(values[2]),
                     ItemPic = values[3],
                     ItemDescr = values[4]
                 };
@@ -87,6 +99,11 @@ namespace Butik_PGCJ
             double sumDifference = MyForm.CalculateDictionary() - MyForm.CalculateDiscountDictionary();
             return sumDifference;
         }
+    }
+
+    class ShoppingCart
+    {
+
     }
 
     class MyForm : Form
@@ -394,7 +411,7 @@ namespace Butik_PGCJ
             sumLabel.Text = "";
         }
 
-        private void loadSavedCart(object sender, EventArgs e)
+        public void loadSavedCart(object sender, EventArgs e)
         {
             string[] lines = File.ReadAllLines(@"C:\Windows\Temp\savedCart.txt");
             foreach (string line in lines)
@@ -450,7 +467,6 @@ namespace Butik_PGCJ
                 discountGlobalValue = actualDiscount;
                 addDiscount.Enabled = false;
                 discountTextbox.Text = "Du har angivit en rabattkod!";
-                discountTextbox.ReadOnly = true;                                // Kanske onödig..
                 discountTextbox.Enabled = false;
             }
             else
