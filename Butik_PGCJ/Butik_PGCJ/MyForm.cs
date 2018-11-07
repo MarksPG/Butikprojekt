@@ -181,6 +181,7 @@ namespace Butik_PGCJ
     {
         public string DiscountName { get; set; }
         public int DiscountValue { get; set; }
+        private static double actualDiscountValue;
 
         public static List<Discount> ReadDiscountFile()
         {
@@ -208,24 +209,47 @@ namespace Butik_PGCJ
 
         public static double CalculateDiscountDictionary(Dictionary<Product, int> shoppingBasket)
         {
+            //double discountValue = actualDiscountValue;
             double sumTotal = 0;
             foreach (KeyValuePair<Product, int> pair in shoppingBasket)
             {
-                sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - MyForm.discountGlobalValue / 100);
+                sumTotal += (pair.Key.ItemPrice * pair.Value) * (1 - actualDiscountValue / 100);
             }
             return sumTotal;
+        }
+
+        public void CheckDiscountCode(TextBox discountTextbox, Label discountLabel, Button addDiscount)
+        {
+            List<Discount> discountItem = Discount.ReadDiscountFile();
+            string enteredCode = discountTextbox.Text;
+
+            if (discountItem.Any(d => d.DiscountName == enteredCode))
+            {
+                double findDiscountValue = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
+                discountLabel.Text = "Grattis, koden är giltig och ger dig " + findDiscountValue + "% på allt du köper!";
+                addDiscount.Enabled = false;
+                discountTextbox.Text = "Du har angivit en rabattkod!";
+                discountTextbox.Enabled = false;
+
+                actualDiscountValue = findDiscountValue;
+            }
+            else
+            {
+                discountLabel.Text = "Tyvärr, koden är inte giltig!";
+            }
         }
     }
 
     class MyForm : Form
     {
         // Global initializing
-        public static double discountGlobalValue = 0;
         public static ListBox listBoxItems;
 
         // Static initializing
         static Label sumLabel;
         public static ShoppingCart s = new ShoppingCart();
+        public static Discount d = new Discount();
+
 
         // Non global initializing
         Button doCheckout;
@@ -542,22 +566,7 @@ namespace Butik_PGCJ
 
         private void DiscountButtonClicked(object sender, EventArgs e)
         {
-            List<Discount> discountItem = Discount.ReadDiscountFile();
-            string enteredCode = discountTextbox.Text;
-
-            if (discountItem.Any(d => d.DiscountName == enteredCode))
-            {
-                int actualDiscount = discountItem.Where(d => d.DiscountName == enteredCode).Select(d => d.DiscountValue).Single();
-                discountLabel.Text = "Grattis, koden är giltig och ger dig " + actualDiscount + "% på allt du köper!";
-                discountGlobalValue = actualDiscount;
-                addDiscount.Enabled = false;
-                discountTextbox.Text = "Du har angivit en rabattkod!";
-                discountTextbox.Enabled = false;
-            }
-            else
-            {
-                discountLabel.Text = "Tyvärr, koden är inte giltig!";
-            }
+            d.CheckDiscountCode(discountTextbox, discountLabel, addDiscount);
             UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
         }
 
