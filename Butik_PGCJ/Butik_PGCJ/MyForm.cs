@@ -18,7 +18,7 @@ namespace Butik_PGCJ
         public string ItemPic { get; set; }
         public string ItemDescr { get; set; }
         public int KeyValue { get; set; }
-        public static List<Product> ShopItems { get; set; }
+        public List<Product> ShopItems { get; set; }
 
         public int ItemPrice
         {
@@ -32,28 +32,35 @@ namespace Butik_PGCJ
             }
         }
 
-        public static List<Product> ReadVendorFile()
+        public List<Product> ReadVendorFile()
         {
             string[] lines = File.ReadAllLines("Products.csv");
             List<Product> shopItems = new List<Product> { };
-            foreach (string line in lines)
+            try
             {
-                string[] values = line.Split(',');
-                Product p = new Product
+                foreach (string line in lines)
                 {
-                    Type = values[0],
-                    ItemName = values[1],
-                    itemPrice = int.Parse(values[2]),
-                    ItemPic = values[3],
-                    ItemDescr = values[4]
-                };
-                MyForm.listBoxItems.Items.Add(p.ItemName);
-                shopItems.Add(p);
+                    string[] values = line.Split(',');
+                    Product p = new Product
+                    {
+                        Type = values[0],
+                        ItemName = values[1],
+                        itemPrice = int.Parse(values[2]),
+                        ItemPic = values[3],
+                        ItemDescr = values[4]
+                    };
+                    MyForm.listBoxItems.Items.Add(p.ItemName);
+                    shopItems.Add(p);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Fel i produktfilen!");
             }
             return shopItems;
         }
 
-        public static void PopulateListBox(List<Product> tempShopList)
+        public void PopulateListBox(List<Product> tempShopList)
         {
             MyForm.listBoxItems.Items.Clear();
             foreach (Product p in tempShopList)
@@ -108,6 +115,7 @@ namespace Butik_PGCJ
                     KeyValue = int.Parse(values[5])
                 };
 
+                // Enables comparison of two objects, equal but technically different, when adding.
                 var index = shoppingBasket.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
                 if (shoppingBasket.ContainsKey(p) || index.Key != null)
                 {
@@ -122,6 +130,7 @@ namespace Butik_PGCJ
 
         public void AddToBasket(Product p)
         {
+            // Enables comparison of two objects, equal but technically different, when adding.
             var index = shoppingBasket.FirstOrDefault(x => x.Key.ItemName == p.ItemName);
             if (shoppingBasket.ContainsKey(p) || index.Key != null)
             {
@@ -135,6 +144,9 @@ namespace Butik_PGCJ
 
         public void RemoveFromBasket(ListView itemCart)
         {
+            // Not possible to remove from dictionary while looping through it.
+            // Instead, looping over a temporarily created array we can delete from shoppingBasket.
+
             string itemCheckTag = itemCart.SelectedItems[0].Tag.ToString();
             var itemToRemove = shoppingBasket.Where(i => i.Key.ItemName == itemCheckTag).ToArray();
             foreach (var i in itemToRemove)
@@ -181,9 +193,9 @@ namespace Butik_PGCJ
     {
         public string DiscountName { get; set; }
         public int DiscountValue { get; set; }
-        private static double actualDiscountValue;
+        private double actualDiscountValue;
 
-        public static List<Discount> ReadDiscountFile()
+        public List<Discount> ReadDiscountFile()
         {
             string[] lines = File.ReadAllLines("Discounts.csv");
             List<Discount> discountItem = new List<Discount> { };
@@ -207,9 +219,8 @@ namespace Butik_PGCJ
             return discountItem;
         }
 
-        public static double CalculateDiscountDictionary(Dictionary<Product, int> shoppingBasket)
+        public double CalculateDiscountDictionary(Dictionary<Product, int> shoppingBasket)
         {
-            //double discountValue = actualDiscountValue;
             double sumTotal = 0;
             foreach (KeyValuePair<Product, int> pair in shoppingBasket)
             {
@@ -220,7 +231,7 @@ namespace Butik_PGCJ
 
         public void CheckDiscountCode(TextBox discountTextbox, Label discountLabel, Button addDiscount)
         {
-            List<Discount> discountItem = Discount.ReadDiscountFile();
+            List<Discount> discountItem = ReadDiscountFile();
             string enteredCode = discountTextbox.Text;
 
             if (discountItem.Any(d => d.DiscountName == enteredCode))
@@ -247,11 +258,12 @@ namespace Butik_PGCJ
 
         // Static initializing
         static Label sumLabel;
-        public static ShoppingCart s = new ShoppingCart();
-        public static Discount d = new Discount();
-
 
         // Non global initializing
+        public static ShoppingCart s = new ShoppingCart();
+        public static Discount d = new Discount();
+        public static Product p = new Product();
+
         Button doCheckout;
         Button addItemToCart;
         Button removeItemFromCart;
@@ -501,7 +513,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
-            shopItemsList = Product.ReadVendorFile();
+            shopItemsList = p.ReadVendorFile();
             tempShopList = shopItemsList.ToList();
         }
 
@@ -515,7 +527,7 @@ namespace Butik_PGCJ
                     tempShopList.Add(p);
                 }
             }
-            Product.PopulateListBox(tempShopList);
+            p.PopulateListBox(tempShopList);
         }
 
         private void LoadAccessoryToItemListView(object sender, EventArgs e)
@@ -528,7 +540,7 @@ namespace Butik_PGCJ
                     tempShopList.Add(p);
                 }
             }
-            Product.PopulateListBox(tempShopList);
+            p.PopulateListBox(tempShopList);
         }
 
         private void SaveAllItemsFromCart(object sender, EventArgs e)
@@ -540,7 +552,7 @@ namespace Butik_PGCJ
         {
             s.LoadCart();
             s.UpdateListView(itemCart);
-            UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
+            UpdateSum(d.CalculateDiscountDictionary(s.ShoppingBasket));
             loadCart.Enabled = false;
         }
 
@@ -567,7 +579,7 @@ namespace Butik_PGCJ
         private void DiscountButtonClicked(object sender, EventArgs e)
         {
             d.CheckDiscountCode(discountTextbox, discountLabel, addDiscount);
-            UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
+            UpdateSum(d.CalculateDiscountDictionary(s.ShoppingBasket));
         }
 
         private void ItemListBoxClicked(object sender, EventArgs e)
@@ -592,7 +604,7 @@ namespace Butik_PGCJ
                 Product p = tempShopList[listBoxItems.SelectedIndex];
                 s.AddToBasket(p);
                 s.UpdateListView(itemCart);
-                UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
+                UpdateSum(d.CalculateDiscountDictionary(s.ShoppingBasket));
             }
             catch
             {
@@ -605,7 +617,7 @@ namespace Butik_PGCJ
             try
             {
                 s.RemoveFromBasket(itemCart);
-                UpdateSum(Discount.CalculateDiscountDictionary(s.ShoppingBasket));
+                UpdateSum(d.CalculateDiscountDictionary(s.ShoppingBasket));
             }
             catch
             {
@@ -626,7 +638,7 @@ namespace Butik_PGCJ
             myForm.Show();
         }
 
-        private static TableLayoutPanel CreateOutline(int row, int column)
+        private TableLayoutPanel CreateOutline(int row, int column)
         {
             return new TableLayoutPanel
             {
@@ -636,7 +648,7 @@ namespace Butik_PGCJ
             };
         }
 
-        private static Label CreateLabel(AnchorStyles anchor, bool value, string name)
+        private Label CreateLabel(AnchorStyles anchor, bool value, string name)
         {
             return new Label
             {
@@ -647,7 +659,7 @@ namespace Butik_PGCJ
             };
         }
 
-        private static Button CreateButton(AnchorStyles anchor, string name)
+        private Button CreateButton(AnchorStyles anchor, string name)
         {
             return new Button
             {
@@ -692,7 +704,7 @@ namespace Butik_PGCJ
             for (int i = 0; i < 2; i++) { outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
             // Calculate discount on Dictionary
-            double sumTotal = Discount.CalculateDiscountDictionary(MyForm.s.ShoppingBasket);
+            double sumTotal = MyForm.d.CalculateDiscountDictionary(MyForm.s.ShoppingBasket);
             double sumDifference = MyForm.s.CalculateDictionary() - sumTotal;
 
             // Labels
@@ -797,7 +809,7 @@ namespace Butik_PGCJ
             }
         }
 
-        private static Label CreateLabel(AnchorStyles anchor, string name)
+        private Label CreateLabel(AnchorStyles anchor, string name)
         {
             return new Label
             {
