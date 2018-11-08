@@ -49,7 +49,7 @@ namespace Butik_PGCJ
                         ItemPic = values[3],
                         ItemDescr = values[4]
                     };
-                    MyForm.listBoxItems.Items.Add(p.ItemName);
+                    MyForm.supplyItems.Items.Add(p.ItemName);
                     shopItems.Add(p);
                 }
             }
@@ -60,13 +60,15 @@ namespace Butik_PGCJ
             return shopItems;
         }
 
-        public void PopulateListBox(List<Product> tempShopList)
+        public void PopulateListBox(List<Product> tempShopList, ListBox supplyItems)
         {
-            MyForm.listBoxItems.Items.Clear();
+            supplyItems.ClearSelected();
+            supplyItems.Items.Clear();
             foreach (Product p in tempShopList)
             {
-                MyForm.listBoxItems.Items.Add(p.ItemName);
+                supplyItems.Items.Add(p.ItemName);
             }
+            supplyItems.SelectedIndex = 0;
         }
     }
 
@@ -253,13 +255,8 @@ namespace Butik_PGCJ
 
     class MyForm : Form
     {
-        // Global initializing
-        public static ListBox listBoxItems;
-
-        // Static initializing
+        public static ListBox supplyItems;
         static Label sumLabel;
-
-        // Non global initializing
         public static ShoppingCart s = new ShoppingCart();
         public static Discount d = new Discount();
         public static Product p = new Product();
@@ -299,16 +296,9 @@ namespace Butik_PGCJ
 
         public MyForm()
         {
-            // Sets clientsize
             ClientSize = new Size(840, 570);
-
-            // Icon for store
             Icon = new Icon(@"Pictures\guitar_icon.ico");
-
-            // Name of store
             Text = "PGCJ Gitarraffär - plocka dina strängar online";
-
-            // Background color of MyForm
             BackColor = SystemColors.InactiveBorder;
 
             // Outlines
@@ -454,7 +444,7 @@ namespace Butik_PGCJ
             outline.Controls.Add(clearCart, 3, 7);
             clearCart.Click += RemoveAllItemsFromCart;
 
-            // Textbox
+            // Textboxes
             itemDescriptionTextbox = new TextBox()
             {
                 Dock = DockStyle.Fill,
@@ -476,15 +466,15 @@ namespace Butik_PGCJ
             discountTextbox.KeyDown += DiscountTextBox_KeyDown;
 
             // ListBoxItems (products)
-            listBoxItems = new ListBox()
+            supplyItems = new ListBox()
             {
                 Anchor = AnchorStyles.Top,
                 Dock = DockStyle.Fill,
                 Font = new Font("Arial", 10)
             };
-            outline.Controls.Add(listBoxItems);
-            outline.SetRowSpan(listBoxItems, 4);
-            listBoxItems.SelectedIndexChanged += ItemListBoxClicked;
+            outline.Controls.Add(supplyItems);
+            outline.SetRowSpan(supplyItems, 4);
+            supplyItems.SelectedIndexChanged += ItemListBoxClicked;
 
             // ListView (cart)
             itemCart = new ListView()
@@ -498,7 +488,7 @@ namespace Butik_PGCJ
             outline.SetRowSpan(itemCart, 4);
             outline.Controls.Add(itemCart, 3, 1);
 
-            itemCart.Columns.Add("Vara").Width = 125;
+            itemCart.Columns.Add("Vara").Width = 135;
             itemCart.Columns.Add("Antal").Width = 45;
             itemCart.Columns.Add("Pris").Width = 50;
 
@@ -527,7 +517,7 @@ namespace Butik_PGCJ
                     tempShopList.Add(p);
                 }
             }
-            p.PopulateListBox(tempShopList);
+            p.PopulateListBox(tempShopList, supplyItems);
         }
 
         private void LoadAccessoryToItemListView(object sender, EventArgs e)
@@ -540,7 +530,7 @@ namespace Butik_PGCJ
                     tempShopList.Add(p);
                 }
             }
-            p.PopulateListBox(tempShopList);
+            p.PopulateListBox(tempShopList, supplyItems);
         }
 
         private void SaveAllItemsFromCart(object sender, EventArgs e)
@@ -584,13 +574,13 @@ namespace Butik_PGCJ
 
         private void ItemListBoxClicked(object sender, EventArgs e)
         {
-            if (listBoxItems.SelectedIndex < 0)
+            if (supplyItems.SelectedIndex < 0)
             {
                 return;
             }
             else
             {
-                Product p = tempShopList[listBoxItems.SelectedIndex];
+                Product p = tempShopList[supplyItems.SelectedIndex];
                 itemDescriptionTextbox.Text = p.ItemDescr;
                 actualPriceLabel.Text = p.ItemPrice.ToString() + " kr";
                 itemPicture.Image = Image.FromFile(@"Pictures\" + p.ItemPic);
@@ -601,7 +591,7 @@ namespace Butik_PGCJ
         {
             try
             {
-                Product p = tempShopList[listBoxItems.SelectedIndex];
+                Product p = tempShopList[supplyItems.SelectedIndex];
                 s.AddToBasket(p);
                 s.UpdateListView(itemCart);
                 UpdateSum(d.CalculateDiscountDictionary(s.ShoppingBasket));
@@ -674,13 +664,8 @@ namespace Butik_PGCJ
     {
         public MyForm2()
         {
-            // Icon for receipt
             Icon = new Icon(@"Pictures\guitar_icon.ico");
-
-            // Name of receipt
             Text = "PGCJ Gitarraffär - Tack för att du handlat hos oss.";
-
-            // Sets receipt-size
             ClientSize = new Size(400, 300);
 
             // Outline
@@ -703,7 +688,6 @@ namespace Butik_PGCJ
             outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
             for (int i = 0; i < 2; i++) { outlineReceipt.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25)); }
 
-            // Calculate discount on Dictionary
             double sumTotal = MyForm.d.CalculateDiscountDictionary(MyForm.s.ShoppingBasket);
             double sumDifference = MyForm.s.CalculateDictionary() - sumTotal;
 
@@ -756,7 +740,6 @@ namespace Butik_PGCJ
             outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Right | AnchorStyles.Top, "Totalpris:"), 1, 5); // totalPriceLabelText
             outlineReceipt.Controls.Add(CreateLabel(AnchorStyles.Left, "á-Pris"), 2, 2); // pricePrice
 
-            // DataGridView
             DataGridView dtgv = new DataGridView
             {
                 Dock = DockStyle.Fill,
@@ -772,11 +755,9 @@ namespace Butik_PGCJ
             outlineReceipt.Controls.Add(dtgv, 0, 3);
             outlineReceipt.SetColumnSpan(dtgv, 3);
 
-            // DataGridView cellstyle
             dtgv.DefaultCellStyle.SelectionBackColor = dtgv.DefaultCellStyle.BackColor;
             dtgv.DefaultCellStyle.SelectionForeColor = dtgv.DefaultCellStyle.ForeColor;
 
-            // DataGridViewColumns
             DataGridViewTextBoxColumn itemNameGrid = new DataGridViewTextBoxColumn
             {
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
@@ -796,13 +777,12 @@ namespace Butik_PGCJ
                 ReadOnly = true,
             };
 
-            // Adding columns to DataGridView
             dtgv.Columns.AddRange(new DataGridViewColumn[]
             {
                 itemNameGrid, quantityGrid, priceGrid
             });
 
-            // Sums dictionary and displays at receipt
+            // Sums dictionary and displays at receipt.
             foreach (KeyValuePair<Product, int> pair in MyForm.s.ShoppingBasket)
             {
                 dtgv.Rows.Add(pair.Key.ItemName, pair.Value, pair.Key.ItemPrice + " kr");
