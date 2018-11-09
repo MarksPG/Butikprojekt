@@ -32,7 +32,7 @@ namespace Butik_PGCJ
             }
         }
 
-        public List<Product> ReadVendorFile()
+        public List<Product> ReadVendorFile(ListBox supplyItems)
         {
             string[] lines = File.ReadAllLines("Products.csv");
             List<Product> shopItems = new List<Product> { };
@@ -49,7 +49,7 @@ namespace Butik_PGCJ
                         ItemPic = values[3],
                         ItemDescr = values[4]
                     };
-                    MyForm.supplyItems.Items.Add(p.ItemName);
+                    supplyItems.Items.Add(p.ItemName);
                     shopItems.Add(p);
                 }
             }
@@ -272,7 +272,6 @@ namespace Butik_PGCJ
         Button loadAccessories;
 
         Label itemDescriptionLabel;
-        Label itemCartLabel;
         Label actualPriceLabel;
         Label discountLabel;
 
@@ -372,8 +371,7 @@ namespace Butik_PGCJ
 
             outlineBelowItemCart.Controls.Add(CreateLabel(AnchorStyles.Left, true, "Summa:"), 0, 0); // sumLabel
 
-            itemCartLabel = CreateLabel(AnchorStyles.None, true, "Varukorg");
-            outline.Controls.Add(itemCartLabel, 3, 0);
+            outline.Controls.Add(CreateLabel(AnchorStyles.None, true, "Varukorg"), 3, 0); // itemCartLabel
 
             sumLabel = new Label
             {
@@ -503,7 +501,7 @@ namespace Butik_PGCJ
             };
             outline.Controls.Add(itemPicture, 1, 1);
 
-            shopItemsList = p.ReadVendorFile();
+            shopItemsList = p.ReadVendorFile(supplyItems);
             tempShopList = shopItemsList.ToList();
         }
 
@@ -622,9 +620,11 @@ namespace Butik_PGCJ
 
         private void CheckoutButtonClicked(object sender, EventArgs e)
         {
-            var myForm = new MyForm2();
-            myForm.StartPosition = FormStartPosition.CenterScreen;
-            myForm.BackColor = Color.White;
+            Form myForm = new MyForm2
+            {
+                StartPosition = FormStartPosition.CenterScreen,
+                BackColor = Color.White
+            };
             myForm.Show();
         }
 
